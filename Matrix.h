@@ -13,9 +13,10 @@ class Matrix {
         double &operator()(int row, int col);
         int getRows() const;
         int getCols() const;
-        void printMatrix() const;
-        void readMatrix();                                          // read by row
-    
+        
+        friend std::ostream& operator<<(std::ostream& os, const Matrix& matrix);
+        friend std::istream& operator>>(std::istream& is, Matrix& matrix);
+        
         Matrix operator*(const Matrix &rhs) const;
     private:
         int rows_, cols_;

@@ -60,43 +60,43 @@ int getLengthOfNum(float num) {
     return width + 1 + DECIMAL_PRECISION;
 }
 
-void Matrix::printMatrix() const {
+std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
     // get column spacing for each column
-    std::vector<int> columnSpacing(this->getCols(), 0);
-    for (int y = 0; y < this->getRows(); ++y) {
-        for (int x = 0; x < this->getCols(); ++x) {
-            columnSpacing[x] = std::max(columnSpacing[x], getLengthOfNum((*this)(y, x)));
+    std::vector<int> columnSpacing(matrix.getCols(), 0);
+    for (int y = 0; y < matrix.getRows(); ++y) {
+        for (int x = 0; x < matrix.getCols(); ++x) {
+            columnSpacing[x] = std::max(columnSpacing[x], getLengthOfNum(matrix(y, x)));
         }
     }
     
-    printTopBottom(this->getCols(), '_', '_', columnSpacing);
+    printTopBottom(matrix.getCols(), '_', '_', columnSpacing);
 
-    for (int y = 0; y < this->getRows(); ++y) {
+    for (int y = 0; y < matrix.getRows(); ++y) {
         std::cout << "|";
-        for (int x = 0; x < this->getCols(); ++x) {
+        for (int x = 0; x < matrix.getCols(); ++x) {
             std::cout << " " << std::setw(columnSpacing[x]) 
                       << std::fixed << std::setprecision(2) 
-                      << (*this)(y, x);
+                      << matrix(y, x);
         }
         std::cout << " |" << std::endl;
     }
 
-    printTopBottom(this->getCols(), '-', '-', columnSpacing);
-    return;
+    printTopBottom(matrix.getCols(), '-', '-', columnSpacing);
+    return os;
 }
 
-void Matrix::readMatrix() {
-    for (int y = 0; y < this->getRows(); ++y) {
+std::istream& operator>>(std::istream& is, Matrix& matrix) {
+    for (int y = 0; y < matrix.getRows(); ++y) {
         std::cout << "Row " << (y + 1) << ": " << std::endl;
-        for (int x = 0; x < this->getCols(); ++x) {
+        for (int x = 0; x < matrix.getCols(); ++x) {
             double curEntry;
             if (!(std::cin >> curEntry)) {
                 throw std::runtime_error("Invalid entry");
             }
-            (*this)(y, x) = curEntry;
+            matrix(y, x) = curEntry;
         }
     }
-    return;
+    return is;
 }
 
 Matrix readAndInitializeMatrix() {
@@ -110,9 +110,10 @@ Matrix readAndInitializeMatrix() {
     if (!(std::cin >> numCols)) {
         throw std::runtime_error("Invalid input for numCols");
     }
-
-    Matrix result = Matrix(numRows, numCols);
-    result.readMatrix();
+    
+    Matrix result(numRows, numCols);
+    std::cout << "Please type your rows:" << std::endl;
+    std::cin >> result;
 
     return result;
 }

@@ -3,11 +3,11 @@
 int main() {
     // Enter matrices:
     Matrix A = readAndInitializeMatrix();
-    A.printMatrix();
+    std::cout << A;
     Matrix B = readAndInitializeMatrix();
-    B.printMatrix();
+    std::cout << B;
 
-    (A*B).printMatrix();
-    
+    std::cout << (A*B);
+
     return 0;
 }
