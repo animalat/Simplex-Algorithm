@@ -1,5 +1,5 @@
-#include "Matrix.h"
-#include "ExtraMatrixFunctions.h"
+#include "matrix/Matrix.h"
+#include "matrix/ExtraMatrixFunctions.h"
 
 int main() {
     // Enter matrices:
