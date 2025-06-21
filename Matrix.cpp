@@ -6,6 +6,14 @@
 
 const int DECIMAL_PRECISION = 2;
 
+// Constructor
+Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, 
+                                entries_(rows, std::vector<double>(cols, 0.0)) {
+    if (rows < 0 || cols < 0) {
+        throw std::invalid_argument("Invalid matrix size");
+    }
+}
+
 // Accessors and mutators
 double Matrix::operator()(int row, int col) const {
     if (row < 0 || row >= rows_) {
@@ -137,3 +145,33 @@ Matrix Matrix::operator*(const Matrix &rhs) const {
     return result;
 }
 
+
+Matrix Matrix::operator+(const Matrix &rhs) const {
+    if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
+        throw std::out_of_range("Invalid matrix dimensions");
+    }
+
+    Matrix result(this->getRows(), this->getCols());
+    for (int i = 0; i < result.getRows(); ++i) {
+        for (int j = 0; j < result.getCols(); ++j) {
+            result(i, j) = (*this)(i, j) + rhs(i, j);
+        }
+    }
+
+    return result;
+}
+
+Matrix Matrix::operator-(const Matrix &rhs) const {
+    if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
+        throw std::out_of_range("Invalid matrix dimensions");
+    }
+
+    Matrix result(this->getRows(), this->getCols());
+    for (int i = 0; i < result.getRows(); ++i) {
+        for (int j = 0; j < result.getCols(); ++j) {
+            result(i, j) = (*this)(i, j) - rhs(i, j);
+        }
+    }
+
+    return result;
+}

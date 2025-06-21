@@ -6,8 +6,7 @@
 
 class Matrix {
     public: 
-        Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, 
-                                     entries_(rows, std::vector<double>(cols, 0.0)) {}
+        Matrix(int rows, int cols);
 
         double operator()(int row, int col) const;
         double &operator()(int row, int col);
@@ -18,6 +17,8 @@ class Matrix {
         friend std::istream& operator>>(std::istream& is, Matrix& matrix);
         
         Matrix operator*(const Matrix &rhs) const;
+        Matrix operator+(const Matrix &rhs) const;
+        Matrix operator-(const Matrix &rhs) const;
     private:
         int rows_, cols_;
         std::vector<std::vector<double>> entries_;
