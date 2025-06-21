@@ -1,21 +1,13 @@
-#include <iostream>
-#include <vector>
-#include <set>
+#include "Matrix.h"
 
 int main() {
-    /* max cx
-     * s.t. 
-     * Ax = b
-     * x >= 0
-    */
+    // Enter matrices:
+    Matrix A = readAndInitializeMatrix();
+    A.printMatrix();
+    Matrix B = readAndInitializeMatrix();
+    B.printMatrix();
 
+    (A*B).printMatrix();
     
-    std::vector<int> c;
-    std::vector<int> b;
-    // vector of columns
-    std::vector<std::vector<int>> A;
-
-    
-
     return 0;
 }
