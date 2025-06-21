@@ -19,6 +19,10 @@ class Matrix {
         Matrix operator*(const Matrix &rhs) const;
         Matrix operator+(const Matrix &rhs) const;
         Matrix operator-(const Matrix &rhs) const;
+
+        void swapRows(int row1, int row2);
+        void addRows(int row1, int row2, double factor = 1.0);
+        void multRow(int row, double factor);
     private:
         int rows_, cols_;
         std::vector<std::vector<double>> entries_;

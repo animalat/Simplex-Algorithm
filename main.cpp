@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include "ExtraMatrixFunctions.h"
 
 int main() {
     // Enter matrices:
@@ -7,7 +8,8 @@ int main() {
     Matrix B = readAndInitializeMatrix();
     std::cout << B;
 
-    std::cout << (A*B);
+    std::cout << leftInverse(A);
+    std::cout << leftInverse(B);
 
     return 0;
 }
