@@ -80,8 +80,8 @@ Matrix leftInverse(const Matrix &matrix) {
         }
 
         // normalize the pivot row 
-        result.multRow(x, 1.0/matrixCopy(x, x));
-        matrixCopy.multRow(x, 1.0/matrixCopy(x, x));
+        result.scaleRow(x, 1.0/matrixCopy(x, x));
+        matrixCopy.scaleRow(x, 1.0/matrixCopy(x, x));
 
         // row elimination
         for (int y = 0; y < matrixCopy.getRows(); ++y) {

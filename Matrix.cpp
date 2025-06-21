@@ -81,13 +81,13 @@ std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
     printTopBottom(matrix.getCols(), '_', '_', columnSpacing);
 
     for (int y = 0; y < matrix.getRows(); ++y) {
-        std::cout << "|";
+        os << "|";
         for (int x = 0; x < matrix.getCols(); ++x) {
-            std::cout << " " << std::setw(columnSpacing[x]) 
+            os << " " << std::setw(columnSpacing[x]) 
                       << std::fixed << std::setprecision(2) 
                       << matrix(y, x);
         }
-        std::cout << " |" << std::endl;
+        os << " |" << std::endl;
     }
 
     printTopBottom(matrix.getCols(), '-', '-', columnSpacing);
@@ -96,10 +96,9 @@ std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
 
 std::istream& operator>>(std::istream& is, Matrix& matrix) {
     for (int y = 0; y < matrix.getRows(); ++y) {
-        std::cout << "Row " << (y + 1) << ": " << std::endl;
         for (int x = 0; x < matrix.getCols(); ++x) {
             double curEntry;
-            if (!(std::cin >> curEntry)) {
+            if (!(is >> curEntry)) {
                 throw std::runtime_error("Invalid entry");
             }
             matrix(y, x) = curEntry;
@@ -121,7 +120,7 @@ Matrix readAndInitializeMatrix() {
     }
     
     Matrix result(numRows, numCols);
-    std::cout << "Please type your rows:" << std::endl;
+    std::cout << "Please type your rows (left to right):" << std::endl;
     std::cin >> result;
 
     return result;
@@ -191,6 +190,6 @@ void Matrix::addRows(int row1, int row2, double factor) {
     (*this) = rowAddMatrix(row1, row2, this->getRows(), factor) * (*this);
 }
 
-void Matrix::multRow(int row, double factor) {
+void Matrix::scaleRow(int row, double factor) {
     (*this) = rowMultiplyMatrix(row, this->getRows(), factor) * (*this);
 }

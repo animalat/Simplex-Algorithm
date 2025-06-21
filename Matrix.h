@@ -22,7 +22,7 @@ class Matrix {
 
         void swapRows(int row1, int row2);
         void addRows(int row1, int row2, double factor = 1.0);
-        void multRow(int row, double factor);
+        void scaleRow(int row, double factor);
     private:
         int rows_, cols_;
         std::vector<std::vector<double>> entries_;

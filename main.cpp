@@ -8,8 +8,8 @@ int main() {
     Matrix B = readAndInitializeMatrix();
     std::cout << B;
 
-    std::cout << leftInverse(A);
-    std::cout << leftInverse(B);
+    std::cout << leftInverse(A) << std::endl;
+    std::cout << leftInverse(B) << std::endl;
 
     return 0;
 }
