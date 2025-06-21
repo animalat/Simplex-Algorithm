@@ -14,4 +14,6 @@ Matrix rowMultiplyMatrix(int row, int size, double factor);
 
 Matrix leftInverse(const Matrix &matrix);
 
+Matrix transpose(const Matrix &matrix);
+
 #endif
