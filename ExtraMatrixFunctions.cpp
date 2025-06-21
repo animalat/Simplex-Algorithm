@@ -96,3 +96,14 @@ Matrix leftInverse(const Matrix &matrix) {
 
     return result;
 }
+
+Matrix transpose(const Matrix &matrix) {
+    Matrix result(matrix.getCols(), matrix.getRows());
+    for (int x = 0; x < matrix.getCols(); ++x) {
+        for (int y = 0; y < matrix.getRows(); ++y) {
+            result(x, y) = matrix(y, x);
+        }
+    }
+
+    return result;
+}
