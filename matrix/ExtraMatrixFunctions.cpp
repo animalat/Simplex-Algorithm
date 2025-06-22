@@ -54,7 +54,7 @@ Matrix rowMultiplyMatrix(int row, int size, double factor) {
     return result;
 }
 
-
+// This is an implementation of the Gaussian elimination algorithm.
 Matrix leftInverse(const Matrix &matrix) {
     if (matrix.getCols() != matrix.getRows()) {
         throw std::domain_error("Matrix has no inverse");

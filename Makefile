@@ -6,7 +6,7 @@ CXXFLAGS := -std=c++17 -Wall -Wextra -I./matrix -I./simplex
 SRCS := main.cpp \
         matrix/Matrix.cpp \
         matrix/ExtraMatrixFunctions.cpp \
-        simplex/SimplexSolver.cpp
+        simplex/Simplex.cpp
 
 # Object files
 OBJS := $(SRCS:.cpp=.o)
