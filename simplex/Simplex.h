@@ -4,6 +4,20 @@
 #include "../matrix/Matrix.h"
 #include <vector>
 
+enum class LPResultType { OPTIMAL, UNBOUNDED, INFEASIBLE };
+
+struct LPResult {
+    LPResultType type;
+    // solution is the optimal solution if OPTIMAL, 
+    // feasible (r) if UNBOUNDED, 
+    // and empty if INFEASIBLE.
+    Matrix solution;
+    // certificate is y if OPTIMAL (s.t. (c - y^TA) <= 0),
+    // d (s.t. Ad = 0) if UNBOUNDED
+    // y s.t. y^TA >= 0 but y^Tb < 0 if INFEASIBLE.
+    Matrix certificate;
+};
+
 /**
  * Transforms the LP into canonical form (suitable for the simplex algorithm).
  * 

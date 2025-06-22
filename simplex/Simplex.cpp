@@ -31,10 +31,10 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm, Matrix &constrai
     
     // Change objective function
     Matrix inverseTranspose = transpose(basisInverse);
-    // dualTranspose = y^T = ((A_B^{-T}) * c_B)^T
-    Matrix dualTranspose = transpose(inverseTranspose * transpose(getSubMatrix(objectiveFunc, basis)));
-    objectiveFunc = objectiveFunc - (dualTranspose * constraintsLHS);
-    constantTerm += (dualTranspose * constraintsRHS)(0, 0);
+    // y^T = ((A_B^{-T}) * c_B)^T
+    Matrix yT = transpose(inverseTranspose * transpose(getSubMatrix(objectiveFunc, basis)));
+    objectiveFunc = objectiveFunc - (yT * constraintsLHS);
+    constantTerm += (yT * constraintsRHS)(0, 0);
 
     // Change constraints
     constraintsLHS = basisInverse * constraintsLHS;

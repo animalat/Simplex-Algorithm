@@ -14,7 +14,7 @@ int main() {
     std::cin >> z;
 
     canonicalForm(C, z, A, B, std::vector{0, 1, 3});
-    std::cout << C << z << A << B << std::endl;
+    std::cout << C << z << '\n' << A << B << std::endl;
 
     return 0;
 }
