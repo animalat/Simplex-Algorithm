@@ -4,8 +4,65 @@
 #include "../matrix/Matrix.h"
 #include <vector>
 
-void canonicalForm(Matrix &objectiveFunc, double &constantTerm, Matrix &constraintsLHS, Matrix &constraintsRHS, const std::vector<int> &basis);
+/**
+ * Transforms the LP into canonical form (suitable for the simplex algorithm).
+ * 
+ * Assumes LP is in standard equality form (SEF):
+ *     maximize    c^Tx
+ *     subject to  Ax = b
+ *                 x >= 0
+ *
+ * After this transformation, the basic variables will correspond to the provided basis,
+ * and the constraint matrix will be reduced accordingly. The objective function will also
+ * be rewritten to account for the current basis.
+ *
+ * @param objectiveFunc   Row vector (1 x n). objective coefficients c^T
+ *                        Gets modified to the reduced objective function.
+ * 
+ * @param constantTerm    Scalar (double). constant term from the objective function z
+ *                        Gets updated during transformation (constantTerm + y^Tb).
+ * 
+ * @param constraintsLHS  Matrix (m x n). LHS matrix A in constraints Ax = b
+ *                        Gets overwritten to A_B^{-1}A after canonicalization.
+ *
+ * @param constraintsRHS  Column vector (m x 1). RHS vector b in Ax = b
+ *                        Gets overwritten to A_B^{-1}b.
+ * 
+ * @param basis           Vector of indices (size m), column indices in A that form the initial basis.
+ *                        These must point to linearly independent columns in A.
+ */
+void canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
+                   Matrix &constraintsLHS, Matrix &constraintsRHS, 
+                   const std::vector<int> &basis);
 
-int simplex(Matrix &objectiveFunc, double constantTerm, Matrix &constraintsLHS, Matrix &constraintsRHS, std::vector<int> &basis);
+/**
+ * Runs the simplex algorithm to solve a linear program in standard form:
+ *     maximize    c^Tx
+ *     subject to  Ax = b
+ *                 x >= 0
+ *
+ * This assumes a feasible basis is already provided.
+ * Further, the LP must be in standard equality form (SEF) with x >= 0
+ *
+ * @param objectiveFunc   Row vector (1 x n), objective coefficients c^T.
+ *                        Gets modified during pivot steps to the reduced form.
+ * 
+ * @param constantTerm    Scalar (double), constant term z in the objective.
+ *                        Updated as the algorithm proceeds.
+ * 
+ * @param constraintsLHS  Matrix (m x n), constraint matrix A.
+ *                        Gets transformed as pivot operations proceed.
+ *
+ * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.
+ *                        Updated with each pivot.
+ * 
+ * @param basis           Vector of indices (size m), current basis column indices.
+ *                        Gets updated in-place as the algorithm pivots.
+ * 
+ * @return int            Optimal value
+ */
+int simplex(Matrix &objectiveFunc, double constantTerm, 
+            Matrix &constraintsLHS, Matrix &constraintsRHS, 
+            std::vector<int> &basis);
 
 #endif
