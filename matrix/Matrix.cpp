@@ -18,9 +18,9 @@ Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols},
 // Accessors and mutators
 double Matrix::operator()(int row, int col) const {
     if (row < 0 || row >= rows_) {
-        throw std::out_of_range("Matrix indices out of bounds");
+        throw std::out_of_range("Matrix row out of bounds");
     } else if (col < 0 || col >= cols_) {
-        throw std::out_of_range("Matrix indices out of bounds");
+        throw std::out_of_range("Matrix column out of bounds");
     }
 
     return entries_[row][col];
@@ -28,9 +28,9 @@ double Matrix::operator()(int row, int col) const {
 
 double &Matrix::operator()(int row, int col) {
     if (row < 0 || row >= rows_) {
-        throw std::out_of_range("Matrix indices out of bounds");
+        throw std::out_of_range("Matrix row out of bounds");
     } else if (col < 0 || col >= cols_) {
-        throw std::out_of_range("Matrix indices out of bounds");
+        throw std::out_of_range("Matrix column out of bounds");
     }
     
     return entries_[row][col];

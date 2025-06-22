@@ -1,12 +1,18 @@
 #include "Simplex.h"
 #include "../matrix/ExtraMatrixFunctions.h"
 #include <stdexcept>
+#include <limits>
 
 Matrix getSubMatrix(const Matrix &matrix, const std::vector<int> &basis) {
-    Matrix subMatrix(basis.size(), basis.size());
-    for (const int &x : basis) {
+    if (basis.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw std::invalid_argument("Basis size is greater than an integer");
+    }
+    
+    const int basisSize = static_cast<int>(basis.size());
+    Matrix subMatrix(matrix.getRows(), basisSize);
+    for (int x = 0; x < basisSize; ++x) {
         for (int y = 0; y < matrix.getRows(); ++y) {
-            subMatrix(y, x) = matrix(y, x);
+            subMatrix(y, x) = matrix(y, basis[x]);
         }
     }
 
@@ -24,9 +30,9 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm, Matrix &constrai
     Matrix basisInverse = leftInverse(getSubMatrix(constraintsLHS, basis));
     
     // Change objective function
-    Matrix inverseTranpose = transpose(basisInverse);
+    Matrix inverseTranspose = transpose(basisInverse);
     // dualTranspose = y^T = ((A_B^{-T}) * c_B)^T
-    Matrix dualTranspose = transpose(inverseTranpose * getSubMatrix(objectiveFunc, basis));
+    Matrix dualTranspose = transpose(inverseTranspose * transpose(getSubMatrix(objectiveFunc, basis)));
     objectiveFunc = objectiveFunc - (dualTranspose * constraintsLHS);
     constantTerm += (dualTranspose * constraintsRHS)(0, 0);
 
@@ -35,4 +41,9 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm, Matrix &constrai
     constraintsRHS = basisInverse * constraintsRHS;
 
     return;
+}
+
+int simplex(Matrix &objectiveFunc, double constantTerm, Matrix &constraintsLHS, Matrix &constraintsRHS, std::vector<int> &basis) {
+    canonicalForm(objectiveFunc, constantTerm, constraintsLHS, constraintsRHS, basis);
+    
 }

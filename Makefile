@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -I./matrix -I./simplex
+CXXFLAGS := -g -O0 -std=c++17 -Wall -Wextra -I./matrix -I./simplex
 
 # Source files
 SRCS := main.cpp \
@@ -12,7 +12,7 @@ SRCS := main.cpp \
 OBJS := $(SRCS:.cpp=.o)
 
 # Target executable
-TARGET := my_program
+TARGET := main
 
 # Default target
 all: $(TARGET)
