@@ -1,9 +1,10 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -g -O0 -std=c++17 -Wall -Wextra -I./matrix -I./simplex
+CXXFLAGS := -g -O0 -std=c++17 -Wall -Wextra -I./matrix -I./simplex -I./common
 
 # Source files
 SRCS := main.cpp \
+		common/Utils.cpp \
         matrix/Matrix.cpp \
         matrix/ExtraMatrixFunctions.cpp \
         simplex/Simplex.cpp

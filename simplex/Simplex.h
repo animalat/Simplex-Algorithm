@@ -44,8 +44,10 @@ struct LPResult {
  * 
  * @param basis           Vector of indices (size m), column indices in A that form the initial basis.
  *                        These must point to linearly independent columns in A.
+ * 
+ * @return Matrix         Returns y = ((A_B^{-T}) * c_B) for use as a certificate
  */
-void canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
+Matrix canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
                    Matrix &constraintsLHS, Matrix &constraintsRHS, 
                    const std::vector<int> &basis);
 
@@ -72,11 +74,9 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  * 
  * @param basis           Vector of indices (size m), current basis column indices.
  *                        Gets updated in-place as the algorithm pivots.
- * 
- * @return int            Optimal value
  */
-int simplex(Matrix &objectiveFunc, double constantTerm, 
+void simplex(Matrix &objectiveFunc, double constantTerm, 
             Matrix &constraintsLHS, Matrix &constraintsRHS, 
-            std::vector<int> &basis);
+            std::vector<int> &basis, LPResult &result);
 
 #endif

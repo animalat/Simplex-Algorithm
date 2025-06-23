@@ -1,11 +1,10 @@
 #include "Matrix.h"
 #include "ExtraMatrixFunctions.h"
+#include "../common/Constants.h"
 #include <stdexcept>
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
-
-constexpr int DECIMAL_PRECISION = 2;
 
 // Constructor
 Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, 
@@ -94,6 +93,7 @@ std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
     return os;
 }
 
+// Read matrix
 std::istream& operator>>(std::istream& is, Matrix& matrix) {
     for (int y = 0; y < matrix.getRows(); ++y) {
         for (int x = 0; x < matrix.getCols(); ++x) {

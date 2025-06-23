@@ -1,8 +1,7 @@
 #include "ExtraMatrixFunctions.h"
+#include "../common/Constants.h"
 #include <algorithm>
 #include <cmath>
-
-constexpr double EPSILON = 1e-9;
 
 Matrix identityMatrix(int size) {
     if (size < 0) {
@@ -17,10 +16,11 @@ Matrix identityMatrix(int size) {
 }
 
 Matrix rowSwapMatrix(int row1, int row2, int size) {
-    if (size <= 0)
+    if (size <= 0) {
         throw std::invalid_argument("Invalid size");
-    if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size)
+    } else if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size) {
         throw std::out_of_range("Row index out of bounds");
+    }
 
     Matrix result = identityMatrix(size);
     result(row1, row1) = 0;
@@ -33,10 +33,11 @@ Matrix rowSwapMatrix(int row1, int row2, int size) {
 }
 
 Matrix rowAddMatrix(int row1, int row2, int size, double factor) {
-    if (size <= 0)
+    if (size <= 0) {
         throw std::invalid_argument("Invalid size");
-    if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size)
+    } else if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size) {
         throw std::out_of_range("Row index out of bounds");
+    }
 
     Matrix result = identityMatrix(size);
     result(row1, row2) = factor;
@@ -44,10 +45,11 @@ Matrix rowAddMatrix(int row1, int row2, int size, double factor) {
 }
 
 Matrix rowMultiplyMatrix(int row, int size, double factor) {
-    if (size <= 0)
+    if (size <= 0) {
         throw std::invalid_argument("Invalid size");
-    if (row < 0 || row >= size)
+    } else if (row < 0 || row >= size) {
         throw std::out_of_range("Row index out of bounds");
+    }
 
     Matrix result = identityMatrix(size);
     result(row, row) *= factor;
@@ -80,8 +82,8 @@ Matrix leftInverse(const Matrix &matrix) {
         }
 
         // normalize the pivot row 
-        result.scaleRow(x, 1.0/matrixCopy(x, x));
-        matrixCopy.scaleRow(x, 1.0/matrixCopy(x, x));
+        result.scaleRow(x, 1.0 / matrixCopy(x, x));
+        matrixCopy.scaleRow(x, 1.0 / matrixCopy(x, x));
 
         // row elimination
         for (int y = 0; y < matrixCopy.getRows(); ++y) {

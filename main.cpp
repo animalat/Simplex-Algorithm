@@ -13,8 +13,11 @@ int main() {
     double z;
     std::cin >> z;
 
-    canonicalForm(C, z, A, B, std::vector{0, 1, 3});
-    std::cout << C << z << '\n' << A << B << std::endl;
+    std::vector<int> basis{0, 3};
+    LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
+    
+    simplex(C, z, A, B, basis, res);
+    std::cout << res.certificate << res.solution << (res.type == LPResultType::UNBOUNDED) << std::endl;
 
     return 0;
 }
