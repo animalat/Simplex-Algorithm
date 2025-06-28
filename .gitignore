@@ -3,3 +3,4 @@ main.exe
 *.o
 tests/hiddenTests
 .DS_Store
+simplex_core/main
