@@ -16,13 +16,8 @@ int main() {
     std::vector<int> basis{0, 2, 4, 5};
     LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
     
-    auto k = phaseI(A, B);
-    for (const auto &i : k) {
-        std::cout << i << std::endl;
-    }
-
-    // simplex(C, z, A, B, basis, res);
-    // std::cout << res.certificate << res.solution << (res.type == LPResultType::UNBOUNDED) << std::endl;
+    twoPhase(C, z, A, B, res);
+    std::cout << res.certificate << res.solution << (res.type == LPResultType::INFEASIBLE);
 
     return 0;
 }

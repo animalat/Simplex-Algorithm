@@ -19,6 +19,16 @@ struct LPResult {
     // certificate is y if OPTIMAL (s.t. (c - y^TA) <= 0),
     // d (s.t. Ad = 0) if UNBOUNDED
     // y s.t. y^TA >= 0 but y^Tb < 0 if INFEASIBLE.
+    // y = c_B^T * A_B^{-1}
+    Matrix certificate;
+};
+
+struct PhaseIResult {
+    bool feasible;
+    std::vector<int> basis;
+    // certificate is y if INFEASIBLE
+    // otherwise, not meaningful.
+    // y = c_B^T * A_B^{-1}
     Matrix certificate;
 };
 
@@ -92,6 +102,10 @@ void simplex(Matrix objectiveFunc, double constantTerm,
              Matrix constraintsLHS, Matrix constraintsRHS, 
              std::vector<int> &basis, LPResult &result);
 
-std::vector<int> phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS);
+PhaseIResult phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS);
+
+void twoPhase(const Matrix &objectiveFunc, double constantTerm, 
+              const Matrix &constraintsLHS, const Matrix &constraintsRHS,
+              LPResult &result);
 
 #endif

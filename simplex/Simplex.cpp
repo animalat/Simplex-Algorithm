@@ -152,7 +152,7 @@ void simplex(Matrix objectiveFunc, double constantTerm,
 }
 
 // Phase I of the algorithm (determine a possibly feasible basis)
-std::vector<int> phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS) {
+PhaseIResult phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS) {
     if (constraintsRHS.getRows() <= 0 || constraintsRHS.getCols() != 1) {
         throw std::invalid_argument("Invalid constraintsRHS dimensions");
     } else if (constraintsLHS.getRows() <= 0 || constraintsLHS.getCols() <= 0) {
@@ -199,14 +199,52 @@ std::vector<int> phaseI(const Matrix &constraintsLHS, const Matrix &constraintsR
         auxiliaryObjective(0, i) = -1.0;
     }
 
+    const Matrix origAuxiliaryLHS = auxiliaryLHS;
+    const Matrix origAuxiliaryRHS = auxiliaryRHS;
+    const Matrix origAuxiliaryObjective = auxiliaryObjective;
+
     // Run the simplex algorithm on our auxiliary LP to 
     // determine a feasible solution or infeasibility.
-    LPResult result;
-    simplex(auxiliaryObjective, 0.0, auxiliaryLHS, auxiliaryRHS, basis, result);
+    LPResult tempResult;
+    simplex(auxiliaryObjective, 0.0, auxiliaryLHS, auxiliaryRHS, basis, tempResult);
 
+    // Now we determine if the LP is infeasible, and provide a certificate if so
+    // If there are auxiliary variables (i.e., with indices >= constraintsLHS.getCols()),
+    // we know that the LP is infeasible.
+    PhaseIResult finalResult;
+    for (const int &k : basis) {
+        if (k >= constraintsLHS.getCols()) {
+            // result.certificate = y = c^T * A_B^{-1}
+            finalResult.certificate = getSubMatrix(origAuxiliaryObjective, basis) * 
+                                      leftInverse(getSubMatrix(origAuxiliaryLHS, basis));
 
+            finalResult.feasible = false;
+            finalResult.basis = std::move(basis);
+            return finalResult;
+        }
+    }
+    
+    // Otherwise, it's feasible (therefore optimal or unbounded)
+    finalResult.feasible = true;
+    finalResult.basis = std::move(basis);
+    // finalResult.certificate is a 0x0 default empty matrix
+    return finalResult;
+}
 
-    // Note that the basis may not be feasible for the original LP, 
-    // we must determine this in the caller.
-    return basis;
+void twoPhase(const Matrix &objectiveFunc, double constantTerm, 
+              const Matrix &constraintsLHS, const Matrix &constraintsRHS,
+              LPResult &result) {
+    // Run Phase I
+    PhaseIResult phaseIResult = phaseI(constraintsLHS, constraintsRHS);
+    if (!phaseIResult.feasible) {
+        // Infeasible case
+        result.type = LPResultType::INFEASIBLE;
+        result.certificate = std::move(phaseIResult.certificate);
+        // result.solution is not meaningful 
+        return;
+    }
+
+    // Run Phase II
+    simplex(objectiveFunc, constantTerm, constraintsLHS, constraintsRHS, phaseIResult.basis, result);
+    return;
 }
