@@ -87,8 +87,8 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  *                        x + tr, (t >= 0), is a feasible solution with arbitrarily large
  *                        objective value for arbitrarily large t.
  */
-void simplex(const Matrix &origObjective, double constantTerm, 
-             const Matrix &origConstraintLHS, const Matrix &origConstraintRHS, 
-             const std::vector<int> &origBasis, LPResult &result);
+void simplex(Matrix objectiveFunc, double constantTerm, 
+             Matrix constraintsLHS, Matrix constraintsRHS, 
+             std::vector<int> basis, LPResult &result);
 
 #endif

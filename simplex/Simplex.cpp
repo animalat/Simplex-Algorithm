@@ -44,23 +44,23 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
     return;
 }
 
-void simplex(const Matrix &origObjective, double constantTerm, 
-             const Matrix &origConstraintLHS, const Matrix &origConstraintRHS, 
-             const std::vector<int> &origBasis, LPResult &result) {
-    if (origObjective.getCols() <= 0 || origObjective.getRows() <= 0) {
+// Phase II of the algorithm
+void simplex(Matrix objectiveFunc, double constantTerm, 
+             Matrix constraintsLHS, Matrix constraintsRHS, 
+             std::vector<int> basis, LPResult &result) {
+    if (objectiveFunc.getCols() <= 0 || objectiveFunc.getRows() <= 0) {
         throw std::invalid_argument("Invalid objectiveFunc size");
-    } else if (origConstraintLHS.getCols() <= 0 || origConstraintLHS.getRows() <= 0) {
+    } else if (constraintsLHS.getCols() <= 0 || constraintsLHS.getRows() <= 0) {
         throw std::invalid_argument("Invalid constraintsLHS size");
-    } else if (origConstraintRHS.getCols() <= 0 || origConstraintRHS.getRows() <= 0) {
+    } else if (constraintsRHS.getCols() <= 0 || constraintsRHS.getRows() <= 0) {
         throw std::invalid_argument("Invalid constraintsRHS size");
-    } else if (origConstraintLHS.getRows() != origConstraintRHS.getRows()) {
+    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
         throw std::invalid_argument("constraintsLHS must be same height constraintsRHS");
     }
 
-    Matrix objectiveFunc = origObjective;
-    Matrix constraintsLHS = origConstraintLHS;
-    Matrix constraintsRHS = origConstraintRHS;
-    std::vector<int> basis = origBasis;
+    // Store some original data for obtaining certificates
+    const Matrix origObjective = objectiveFunc;
+    const Matrix origConstraintLHS = constraintsLHS;
 
     Matrix currentSolution(constraintsLHS.getCols(), 1);
     while (true) {
@@ -121,7 +121,7 @@ void simplex(const Matrix &origObjective, double constantTerm,
             certificateUnbounded(enteringVariableCol, 0) = 1;           // This was the entering variable 
                                                                         // (before we knew the LP is unbounded)
             // Create the certificate: -t*A_{enteringVariableCol}
-            for (int i = 0; i < basis.size(); ++i) {
+            for (int i = 0; i < convertToInt(basis.size()); ++i) {
                 double entry = constraintsLHS(i, enteringVariableCol);
                 if (std::abs(entry) < EPSILON) {
                     entry = 0.0;
