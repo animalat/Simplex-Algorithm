@@ -141,7 +141,7 @@ void simplex(const Matrix &origObjective, double constantTerm,
         if (removeIt != basis.end()) {
             basis.erase(removeIt);
         } else {
-            throw std::invalid_argument("this shouldn't have happened");
+            throw std::invalid_argument("Invalid basis (tried removing non-existent element)");
         }
 
         // Insert enteringVariableCol into basis in sorted order
