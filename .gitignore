@@ -2,3 +2,4 @@ main.exe
 .vscode
 *.o
 tests/hiddenTests
+.DS_Store
