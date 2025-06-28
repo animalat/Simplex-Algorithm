@@ -36,7 +36,7 @@ struct PhaseIResult {
  * Transforms the LP into canonical form (suitable for the simplex algorithm).
  * 
  * Assumes LP is in standard equality form (SEF):
- *     maximize    c^Tx
+ *     maximize    c^Tx + z
  *     subject to  Ax = b
  *                 x >= 0
  *
@@ -67,7 +67,7 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
 
 /**
  * Runs the simplex algorithm to solve a linear program in standard form:
- *     maximize    c^Tx
+ *     maximize    c^Tx + z
  *     subject to  Ax = b
  *                 x >= 0
  *
@@ -76,13 +76,13 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  *
  * NOTE: Throws exceptions for invalid input.
  * 
- * @param objectiveFunc   Row vector (1 x n), objective coefficients c^T.           (argument unchanged)
+ * @param objectiveFunc   Row vector (1 x n), objective coefficients c^T.
  * 
- * @param constantTerm    Scalar (double), constant term z in the objective.        (argument unchanged)
+ * @param constantTerm    Scalar (double), constant term z in the objective.
  * 
- * @param constraintsLHS  Matrix (m x n), constraint matrix A.                      (argument unchanged)
+ * @param constraintsLHS  Matrix (m x n), constraint matrix A.
  *
- * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.          (argument unchanged)
+ * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.
  * 
  * @param basis           Vector of indices (size m), current basis column indices.
  *                        This function updates basis to the final basis used.
@@ -102,8 +102,33 @@ void simplex(Matrix objectiveFunc, double constantTerm,
              Matrix constraintsLHS, Matrix constraintsRHS, 
              std::vector<int> &basis, LPResult &result);
 
+/**
+ * Runs Phase I algorithm on LP, returning a PhaseIResult.
+ *
+ * @param constraintsLHS  The LHS of the constraints (A in Ax=b)
+ * 
+ * @param constraintsRHS  The RHS of the constraints (b in Ax=b)
+ * 
+ * @return PhaseIResult   Returns a PhaseIResult with solution type (true if feasible, false otherwise)
+ *                        If feasible, field basis will store the correct basis. Empty otherwise.
+ *                        If infeasible, field certificate contains a certificate of infeasibility, meaningless otherwise.
+ */
 PhaseIResult phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS);
 
+/**
+ * Runs the 2-Phase algorithm on a passed LP
+ * 
+ * @param objectiveFunc   The multiplied row vector in the objective function (c^T in c^T * x + z)
+ * 
+ * @param constantTerm    The constant term in the objective function (z in c^T * x + z)
+ * 
+ * @param constraintsLHS  The LHS of the constraints (A in Ax=b)
+ * 
+ * @param constraintsRHS  The RHS of the constraints (b in Ax=b)
+ * 
+ * @param result          Returns the result of the LP (type, solution, certificate)
+ *                        If infeasible, note that solution is meaningless.
+ */
 void twoPhase(const Matrix &objectiveFunc, double constantTerm, 
               const Matrix &constraintsLHS, const Matrix &constraintsRHS,
               LPResult &result);
