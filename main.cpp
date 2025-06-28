@@ -13,7 +13,7 @@ int main() {
     double z;
     std::cin >> z;
 
-    std::vector<int> basis{4, 5};
+    std::vector<int> basis{0, 2, 4, 5};
     LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
     
     simplex(C, z, A, B, basis, res);

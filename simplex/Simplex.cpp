@@ -116,16 +116,20 @@ void simplex(const Matrix &origObjective, double constantTerm,
         }
 
         if (curMinIndex == UNBOUNDED_INDEX) {
-            // unbounded
+            // Unbounded case
             Matrix certificateUnbounded(constraintsLHS.getCols(), 1);
-            certificateUnbounded(enteringVariableCol, 0) = 1;
-            for (const int &k : basis) {
-                double entry = constraintsLHS(k, enteringVariableCol);
+            certificateUnbounded(enteringVariableCol, 0) = 1;           // This was the entering variable 
+                                                                        // (before we knew the LP is unbounded)
+            // Create the certificate: -t*A_{enteringVariableCol}
+            for (int i = 0; i < basis.size(); ++i) {
+                double entry = constraintsLHS(i, enteringVariableCol);
                 if (std::abs(entry) < EPSILON) {
                     entry = 0.0;
                 }
-                certificateUnbounded(k, 0) = entry;
+                // negate (since the entries are negative), i.e., -t*A_{enteringVariableCol}
+                certificateUnbounded(basis[i], 0) = -entry;
             }
+            
             result.type = LPResultType::UNBOUNDED;
             result.certificate = certificateUnbounded;
             result.solution = currentSolution;
