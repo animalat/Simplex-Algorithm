@@ -3,7 +3,6 @@
 #include "../common/Constants.h"
 #include "../common/Utils.h"
 #include <algorithm>
-#include <stdexcept>
 #include <limits>
 
 Matrix getSubMatrix(const Matrix &matrix, const std::vector<int> &basis) {
@@ -17,7 +16,7 @@ Matrix getSubMatrix(const Matrix &matrix, const std::vector<int> &basis) {
     return subMatrix;
 }
 
-Matrix canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
+void canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
                      Matrix &constraintsLHS, Matrix &constraintsRHS, 
                      const std::vector<int> &basis) {
     // Note that this function needs constraint x >= 0, for Ax = b
@@ -42,28 +41,32 @@ Matrix canonicalForm(Matrix &objectiveFunc, double &constantTerm,
     constraintsRHS = basisInverse * constraintsRHS;
 
     // Return certificate
-    return y;
+    return;
 }
 
-void simplex(Matrix &objectiveFunc, double constantTerm, 
-             Matrix &constraintsLHS, Matrix &constraintsRHS, 
-             std::vector<int> &basis, LPResult &result) {
-    if (objectiveFunc.getCols() <= 0 || objectiveFunc.getRows() <= 0) {
+void simplex(const Matrix &origObjective, double constantTerm, 
+             const Matrix &origConstraintLHS, const Matrix &origConstraintRHS, 
+             const std::vector<int> &origBasis, LPResult &result) {
+    if (origObjective.getCols() <= 0 || origObjective.getRows() <= 0) {
         throw std::invalid_argument("Invalid objectiveFunc size");
-    } else if (constraintsLHS.getCols() <= 0 || constraintsLHS.getRows() <= 0) {
+    } else if (origConstraintLHS.getCols() <= 0 || origConstraintLHS.getRows() <= 0) {
         throw std::invalid_argument("Invalid constraintsLHS size");
-    } else if (constraintsRHS.getCols() <= 0 || constraintsRHS.getRows() <= 0) {
+    } else if (origConstraintRHS.getCols() <= 0 || origConstraintRHS.getRows() <= 0) {
         throw std::invalid_argument("Invalid constraintsRHS size");
-    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
+    } else if (origConstraintLHS.getRows() != origConstraintRHS.getRows()) {
         throw std::invalid_argument("constraintsLHS must be same height constraintsRHS");
     }
 
-    Matrix certificate(constraintsLHS.getRows(), 1);
+    Matrix objectiveFunc = origObjective;
+    Matrix constraintsLHS = origConstraintLHS;
+    Matrix constraintsRHS = origConstraintRHS;
+    std::vector<int> basis = origBasis;
+
     Matrix currentSolution(constraintsLHS.getCols(), 1);
     while (true) {
-        certificate = canonicalForm(objectiveFunc, constantTerm, 
-                                    constraintsLHS, constraintsRHS, 
-                                    basis);
+        canonicalForm(objectiveFunc, constantTerm, 
+                      constraintsLHS, constraintsRHS, 
+                      basis);
         // Set new basic feasible solution
         currentSolution = Matrix(constraintsLHS.getCols(), 1);
         for (int i = 0; i < convertToInt(basis.size()); ++i) {
@@ -81,7 +84,12 @@ void simplex(Matrix &objectiveFunc, double constantTerm,
             if (i == objectiveFunc.getCols() - 1) {
                 // We've found an optimal solution
                 result.type = LPResultType::OPTIMAL;
+
+                // get certificate (c_B * A_B^{-1}), notice that our objective is a row vector in this.
+                Matrix certificate = getSubMatrix(origObjective, basis) * 
+                                     leftInverse(getSubMatrix(origConstraintLHS, basis));
                 result.certificate = certificate;
+
                 result.solution = currentSolution;
                 return;
             }
@@ -89,7 +97,8 @@ void simplex(Matrix &objectiveFunc, double constantTerm,
         
         // leaving variable is curMinIndex
         double curMinValue = std::numeric_limits<double>::infinity();
-        int curMinIndex = -1;
+        constexpr int UNBOUNDED_INDEX = -1;
+        int curMinIndex = UNBOUNDED_INDEX;
         for (int i = 0; i < constraintsLHS.getRows(); ++i) {
             if (constraintsLHS(i, enteringVariableCol) < EPSILON) {
                 continue;
@@ -106,7 +115,7 @@ void simplex(Matrix &objectiveFunc, double constantTerm,
             }
         }
 
-        if (curMinIndex == -1) {
+        if (curMinIndex == UNBOUNDED_INDEX) {
             // unbounded
             Matrix certificateUnbounded(constraintsLHS.getCols(), 1);
             certificateUnbounded(enteringVariableCol, 0) = 1;

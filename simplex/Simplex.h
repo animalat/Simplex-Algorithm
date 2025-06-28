@@ -3,9 +3,13 @@
 
 #include "../matrix/Matrix.h"
 #include <vector>
+#include <stdexcept>
 
+// Represents the corresponding possible outcomes for a linear program
+// (Fundamental Theorem of Linear Programming)
 enum class LPResultType { OPTIMAL, UNBOUNDED, INFEASIBLE };
 
+// LPResult is used to return the outcome
 struct LPResult {
     LPResultType type;
     // solution is the optimal solution if OPTIMAL, 
@@ -29,6 +33,8 @@ struct LPResult {
  * After this transformation, the basic variables will correspond to the provided basis,
  * and the constraint matrix will be reduced accordingly. The objective function will also
  * be rewritten to account for the current basis.
+ * 
+ * NOTE: Throws exceptions for invalid input.
  *
  * @param objectiveFunc   Row vector (1 x n). objective coefficients c^T
  *                        Gets modified to the reduced objective function.
@@ -44,10 +50,8 @@ struct LPResult {
  * 
  * @param basis           Vector of indices (size m), column indices in A that form the initial basis.
  *                        These must point to linearly independent columns in A.
- * 
- * @return Matrix         Returns y = ((A_B^{-T}) * c_B) for use as a certificate
  */
-Matrix canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
+void canonicalForm(Matrix &objectiveFunc, double &constantTerm, 
                    Matrix &constraintsLHS, Matrix &constraintsRHS, 
                    const std::vector<int> &basis);
 
@@ -60,23 +64,31 @@ Matrix canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  * This assumes a feasible basis is already provided.
  * Further, the LP must be in standard equality form (SEF) with x >= 0
  *
- * @param objectiveFunc   Row vector (1 x n), objective coefficients c^T.
- *                        Gets modified during pivot steps to the reduced form.
+ * NOTE: Throws exceptions for invalid input.
  * 
- * @param constantTerm    Scalar (double), constant term z in the objective.
- *                        Updated as the algorithm proceeds.
+ * @param objectiveFunc   Row vector (1 x n), objective coefficients c^T.           (argument unchanged)
  * 
- * @param constraintsLHS  Matrix (m x n), constraint matrix A.
- *                        Gets transformed as pivot operations proceed.
+ * @param constantTerm    Scalar (double), constant term z in the objective.        (argument unchanged)
+ * 
+ * @param constraintsLHS  Matrix (m x n), constraint matrix A.                      (argument unchanged)
  *
- * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.
- *                        Updated with each pivot.
+ * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.          (argument unchanged)
  * 
- * @param basis           Vector of indices (size m), current basis column indices.
- *                        Gets updated in-place as the algorithm pivots.
+ * @param basis           Vector of indices (size m), current basis column indices. (argument unchanged)
+ * 
+ * @param result          Returns an LPResult with the solution type,
+ *                        solution (optimal if such exists, otherwise feasible)
+ *                        and the corresponding certificate.
+ * 
+ *                        In the optimal case: solution is optimal, certificate verifies this.
+ * 
+ *                        In the unbounded case: solution is feasible, certificate, call it r,
+ *                        has property Ar = vector{0}, cr > 0, meaning, for feasible solution x,
+ *                        x + tr, (t >= 0), is a feasible solution with arbitrarily large
+ *                        objective value for arbitrarily large t.
  */
-void simplex(Matrix &objectiveFunc, double constantTerm, 
-            Matrix &constraintsLHS, Matrix &constraintsRHS, 
-            std::vector<int> &basis, LPResult &result);
+void simplex(const Matrix &origObjective, double constantTerm, 
+             const Matrix &origConstraintLHS, const Matrix &origConstraintRHS, 
+             const std::vector<int> &origBasis, LPResult &result);
 
 #endif

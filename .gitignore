@@ -1,5 +1,4 @@
 main.exe
 .vscode
 *.o
-tests/canonicalFormTest.in
-tests/simplextest.in
+tests/hiddenTests
