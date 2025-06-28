@@ -74,7 +74,8 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  *
  * @param constraintsRHS  Column vector (m x 1), right-hand side vector b.          (argument unchanged)
  * 
- * @param basis           Vector of indices (size m), current basis column indices. (argument unchanged)
+ * @param basis           Vector of indices (size m), current basis column indices.
+ *                        This function updates basis to the final basis used.
  * 
  * @param result          Returns an LPResult with the solution type,
  *                        solution (optimal if such exists, otherwise feasible)
@@ -89,6 +90,8 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
  */
 void simplex(Matrix objectiveFunc, double constantTerm, 
              Matrix constraintsLHS, Matrix constraintsRHS, 
-             std::vector<int> basis, LPResult &result);
+             std::vector<int> &basis, LPResult &result);
+
+std::vector<int> phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS);
 
 #endif

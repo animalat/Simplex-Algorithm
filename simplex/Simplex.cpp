@@ -2,6 +2,7 @@
 #include "../matrix/ExtraMatrixFunctions.h"
 #include "../common/Constants.h"
 #include "../common/Utils.h"
+#include <unordered_set>
 #include <algorithm>
 #include <limits>
 
@@ -47,7 +48,7 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
 // Phase II of the algorithm
 void simplex(Matrix objectiveFunc, double constantTerm, 
              Matrix constraintsLHS, Matrix constraintsRHS, 
-             std::vector<int> basis, LPResult &result) {
+             std::vector<int> &basis, LPResult &result) {
     if (objectiveFunc.getCols() <= 0 || objectiveFunc.getRows() <= 0) {
         throw std::invalid_argument("Invalid objectiveFunc size");
     } else if (constraintsLHS.getCols() <= 0 || constraintsLHS.getRows() <= 0) {
@@ -148,4 +149,64 @@ void simplex(Matrix objectiveFunc, double constantTerm,
         auto insertIt = std::lower_bound(basis.begin(), basis.end(), enteringVariableCol);
         basis.insert(insertIt, enteringVariableCol);
     }
+}
+
+// Phase I of the algorithm (determine a possibly feasible basis)
+std::vector<int> phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS) {
+    if (constraintsRHS.getRows() <= 0 || constraintsRHS.getCols() != 1) {
+        throw std::invalid_argument("Invalid constraintsRHS dimensions");
+    } else if (constraintsLHS.getRows() <= 0 || constraintsLHS.getCols() <= 0) {
+        throw std::invalid_argument("Invalid constraintsLHS dimensions");
+    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
+        throw std::invalid_argument("constraintsLHS and constraintsRHS differ in height");
+    }
+    
+    // auxiliaryLHS will be augmented matrix in form [A | I]
+    Matrix auxiliaryLHS(constraintsLHS.getRows(), constraintsLHS.getCols() + constraintsLHS.getRows());
+    Matrix auxiliaryRHS = constraintsRHS;
+
+    // Populate auxiliaryLHS with values from constraintsLHS
+    for (int x = 0; x < constraintsLHS.getCols(); ++x) {
+        for (int y = 0; y < constraintsLHS.getRows(); ++y) {
+            auxiliaryLHS(y, x) = constraintsLHS(y, x);
+        }
+    }
+
+    // Multiply rows s.t. auxiliaryRHS >= \vector{0}
+    for (int i = 0; i < auxiliaryRHS.getRows(); ++i) {
+        if (auxiliaryRHS(i, 0) < EPSILON) {
+            auxiliaryLHS.scaleRow(i, -1.0);
+            auxiliaryRHS.scaleRow(i, -1.0);
+        }
+    }
+
+    // Augment with I:
+    for (int i = 0; i < constraintsLHS.getRows(); ++i) {
+        auxiliaryLHS(i, constraintsLHS.getCols() + i) = 1.0;
+    }
+
+    // Populate basis with values m, m + 1, ..., m + n - 1
+    // Where m = constraintsLHS.getCols(), n = constraintsLHS.getRows()
+    std::vector<int> basis;
+    for (int i = 0; i < constraintsLHS.getRows(); ++i) {
+        basis.emplace_back(constraintsLHS.getCols() + i);
+    }
+
+    // Populate the auxiliary objective, \vector{-1}x' 
+    // where x' is the auxiliary variables
+    Matrix auxiliaryObjective(1, auxiliaryLHS.getCols());
+    for (int i = constraintsLHS.getCols(); i < auxiliaryLHS.getCols(); ++i) {
+        auxiliaryObjective(0, i) = -1.0;
+    }
+
+    // Run the simplex algorithm on our auxiliary LP to 
+    // determine a feasible solution or infeasibility.
+    LPResult result;
+    simplex(auxiliaryObjective, 0.0, auxiliaryLHS, auxiliaryRHS, basis, result);
+
+
+
+    // Note that the basis may not be feasible for the original LP, 
+    // we must determine this in the caller.
+    return basis;
 }

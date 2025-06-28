@@ -7,6 +7,7 @@
 class Matrix {
     public: 
         Matrix(int rows, int cols);
+        Matrix() = default;
 
         double operator()(int row, int col) const;
         double &operator()(int row, int col);
