@@ -1,6 +1,6 @@
-main.exe
 .vscode
 *.o
-tests/hiddenTests
 .DS_Store
-simplex_core/main
+/simplex_core/main
+/simplex_core/main.exe
+/simplex_core/tests/hidden_tests
