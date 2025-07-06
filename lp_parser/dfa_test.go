@@ -20,22 +20,23 @@ func TestDFAConstruction(t *testing.T) {
 	}
 }
 
-func TestTokenize(t *testing.T) {
-	input := "x + y\n42<=100"
-	expectedTokens := []string{"x", "+", "y", "42", "<=", "100"}
+func assertTokens(t *testing.T, input string, expected []Token) {
+	t.Helper()
 
 	tokens, err := Tokenize(strings.NewReader(input))
 	if err != nil {
 		t.Fatalf("Tokenize() error: %v", err)
 	}
 
-	if len(tokens) != len(expectedTokens) {
-		t.Fatalf("Tokenize() returned %d tokens, want %d", len(tokens), len(expectedTokens))
+	if len(tokens) != len(expected) {
+		t.Fatalf("Tokenize() returned %d tokens, want %d", len(tokens), len(expected))
 	}
 
-	for i, token := range tokens {
-		if token.Value != expectedTokens[i] {
-			t.Errorf("Token %d = %q; want %q", i, token.Value, expectedTokens[i])
+	for i, got := range tokens {
+		want := expected[i]
+		if got.Value != want.Value || got.Type != want.Type {
+			t.Errorf("Token %d = {Type: %q, Value: %q}; want {Type: %q, Value: %q}",
+				i, got.Type, got.Value, want.Type, want.Value)
 		}
 	}
 
@@ -46,29 +47,40 @@ func TestTokenize(t *testing.T) {
 	}
 }
 
+func TestTokenizeSimple(t *testing.T) {
+	input := "x + y\n42<=100"
+	expected := []Token{
+		{Type: TokenId, Value: "x"},
+		{Type: TokenPlus, Value: "+"},
+		{Type: TokenId, Value: "y"},
+		{Type: TokenNumber, Value: "42"},
+		{Type: TokenLessEqual, Value: "<="},
+		{Type: TokenNumber, Value: "100"},
+	}
+	assertTokens(t, input, expected)
+}
+
 func TestTokenizeLP(t *testing.T) {
 	input := "let x1;let x2; max x1 + x2;\ns.t. x1+x2<=5;"
-	expectedTokens := []string{"let", "x1", ";", "let", "x2", ";", "max", "x1",
-		"+", "x2", ";", "s.t.", "x1", "+", "x2", "<=", "5", ";"}
-
-	tokens, err := Tokenize(strings.NewReader(input))
-	if err != nil {
-		t.Fatalf("Tokenize() error: %v", err)
+	expected := []Token{
+		{Type: TokenLet, Value: "let"},
+		{Type: TokenId, Value: "x1"},
+		{Type: TokenSemiColon, Value: ";"},
+		{Type: TokenLet, Value: "let"},
+		{Type: TokenId, Value: "x2"},
+		{Type: TokenSemiColon, Value: ";"},
+		{Type: TokenMax, Value: "max"},
+		{Type: TokenId, Value: "x1"},
+		{Type: TokenPlus, Value: "+"},
+		{Type: TokenId, Value: "x2"},
+		{Type: TokenSemiColon, Value: ";"},
+		{Type: TokenSubjectTo, Value: "s.t."},
+		{Type: TokenId, Value: "x1"},
+		{Type: TokenPlus, Value: "+"},
+		{Type: TokenId, Value: "x2"},
+		{Type: TokenLessEqual, Value: "<="},
+		{Type: TokenNumber, Value: "5"},
+		{Type: TokenSemiColon, Value: ";"},
 	}
-
-	if len(tokens) != len(expectedTokens) {
-		t.Fatalf("Tokenize() returned %d tokens, want %d", len(tokens), len(expectedTokens))
-	}
-
-	for i, token := range tokens {
-		if token.Value != expectedTokens[i] {
-			t.Errorf("Token %d = %q; want %q", i, token.Value, expectedTokens[i])
-		}
-	}
-
-	if testing.Verbose() {
-		for _, token := range tokens {
-			fmt.Printf("token type: %q, token value: %q\n", token.Type, token.Value)
-		}
-	}
+	assertTokens(t, input, expected)
 }
