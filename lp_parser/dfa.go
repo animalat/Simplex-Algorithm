@@ -1,5 +1,7 @@
 package parser
 
+import "fmt"
+
 var allTokens = []TokenType{
 	TokenLet,
 	TokenSubjectTo,
@@ -163,6 +165,28 @@ func NewDFA() *DFA {
 	return dfa
 }
 
-func (dfa *DFA) Run(word string) {
+// Token is the state that has been read, int is how many characters were consumed
+func (dfa *DFA) Run(input []rune) (Token, int, error) {
+	curState := dfa.StartState
+	prevFinalPos := -1
+	var prevFinalType TokenType
 
+	for i := 0; i < len(input); i++ {
+		key := TransitionKey{curState, input[i]}
+		nextState, ok := dfa.Transitions[key]
+		if !ok {
+			break
+		}
+		curState = nextState
+		if finalType, ok := dfa.FinalStates[curState]; ok {
+			prevFinalPos = i
+			prevFinalType = finalType
+		}
+	}
+
+	if prevFinalPos != -1 {
+		return Token{Type: prevFinalType, Value: string(input[:prevFinalPos+1])}, prevFinalPos + 1, nil
+	}
+
+	return Token{}, 0, fmt.Errorf("no valid token recognized from input %q", string(input))
 }
