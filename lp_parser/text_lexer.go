@@ -21,7 +21,7 @@ func Tokenize(reader io.Reader) ([]Token, error) {
 		for _, word := range words {
 			wordRunes := []rune(word)
 			for len(wordRunes) > 0 {
-				currentToken, lettersRead, err := dfa.Run(wordRunes)
+				currentToken, lettersRead, err := dfa.Run(wordRunes, lineNum)
 
 				if err != nil {
 					return tokens, err
