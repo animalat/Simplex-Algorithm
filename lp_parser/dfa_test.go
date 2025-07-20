@@ -47,7 +47,7 @@ func assertTokens(t *testing.T, input string, expected []Token) {
 	}
 }
 
-func TestTokenizeSimple(t *testing.T) {
+func TestDFA_TokenizeSimple(t *testing.T) {
 	input := "x + y\n42<=100"
 	expected := []Token{
 		{Type: TokenId, Value: "x", Line: 1},
@@ -60,7 +60,7 @@ func TestTokenizeSimple(t *testing.T) {
 	assertTokens(t, input, expected)
 }
 
-func TestTokenizeLP(t *testing.T) {
+func TestDFA_TokenizeLP(t *testing.T) {
 	input := "let x1;let x2;\n max x1 + x2;\ns.t. x1+x2<=5;"
 	expected := []Token{
 		{Type: TokenLet, Value: "let", Line: 1},
