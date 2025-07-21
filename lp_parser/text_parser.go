@@ -42,8 +42,7 @@ func (p *Parser) Expect(tt TokenType) (Token, error) {
 }
 
 func (p *Parser) ParseDecl() (*Decl, error) {
-	_, err := p.Expect(TokenLet)
-	if err != nil {
+	if _, err := p.Expect(TokenLet); err != nil {
 		return nil, err
 	}
 
@@ -52,8 +51,7 @@ func (p *Parser) ParseDecl() (*Decl, error) {
 		return nil, err
 	}
 
-	_, err = p.Expect(TokenSemiColon)
-	if err != nil {
+	if _, err = p.Expect(TokenSemiColon); err != nil {
 		return nil, err
 	}
 
@@ -103,8 +101,7 @@ func (p *Parser) ParseConstraint() (*Constraint, error) {
 		return nil, err
 	}
 
-	_, err = p.Expect(TokenSemiColon)
-	if err != nil {
+	if _, err = p.Expect(TokenSemiColon); err != nil {
 		return nil, err
 	}
 
@@ -213,8 +210,8 @@ func (p *Parser) ParseFactor() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = p.Expect(TokenRParen)
-		if err != nil {
+
+		if _, err = p.Expect(TokenRParen); err != nil {
 			return nil, err
 		}
 		return expr, nil
