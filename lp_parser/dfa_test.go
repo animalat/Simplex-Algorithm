@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestDFAConstruction(t *testing.T) {
+func TestDFA_Construction(t *testing.T) {
 	dfa := NewDFA()
 
 	if len(dfa.Transitions) == 0 {

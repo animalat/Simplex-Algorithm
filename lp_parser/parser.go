@@ -13,7 +13,8 @@ func (v *Variable) exprNode()      {}
 func (p *Parser) Peek() (Token, error) {
 	if p.Pos >= len(p.Tokens) {
 		// Return EOF token
-		return Token{Type: TokenEOF, Value: "", Line: -1}, nil
+		const endLine = -1
+		return Token{Type: TokenEOF, Value: "", Line: endLine}, nil
 	}
 	return p.Tokens[p.Pos], nil
 }
@@ -198,7 +199,8 @@ func (p *Parser) ParseFactor() (Expr, error) {
 
 	switch token.Type {
 	case TokenNumber:
-		value, err := strconv.ParseFloat(token.Value, 64)
+		const doubleSize = 64
+		value, err := strconv.ParseFloat(token.Value, doubleSize)
 		if err != nil {
 			return nil, fmt.Errorf("invalid number token at line %d", token.Line)
 		}

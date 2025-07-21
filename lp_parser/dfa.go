@@ -168,7 +168,8 @@ func NewDFA() *DFA {
 // Token is the state that has been read, int is how many characters were consumed
 func (dfa *DFA) Run(input []rune, lineNumber int) (Token, int, error) {
 	curState := dfa.StartState
-	prevFinalPos := -1
+	const startPos = -1
+	prevFinalPos := startPos
 	var prevFinalType TokenType
 
 	for i := 0; i < len(input); i++ {
@@ -184,7 +185,7 @@ func (dfa *DFA) Run(input []rune, lineNumber int) (Token, int, error) {
 		}
 	}
 
-	if prevFinalPos != -1 {
+	if prevFinalPos != startPos {
 		return Token{Type: prevFinalType, Value: string(input[:prevFinalPos+1]), Line: lineNumber}, prevFinalPos + 1, nil
 	}
 
