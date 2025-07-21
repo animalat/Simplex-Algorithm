@@ -21,6 +21,7 @@ type Constraint struct {
 	Left     Expr
 	Operator Token
 	Right    Expr
+	Line     int
 }
 
 type Expr interface {
@@ -30,16 +31,19 @@ type Expr interface {
 type UnaryExpr struct {
 	Operator Token
 	Expr     Expr
+	Line     int
 }
 
 type BinaryExpr struct {
 	Left     Expr
 	Operator Token
 	Right    Expr
+	Line     int
 }
 
 type NumberLiteral struct {
 	Value float64
+	Line  int
 }
 
 type Variable struct {

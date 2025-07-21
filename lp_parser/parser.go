@@ -202,7 +202,7 @@ func (p *Parser) ParseFactor() (Expr, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid number token at line %d", token.Line)
 		}
-		return &NumberLiteral{Value: value}, nil
+		return &NumberLiteral{Value: value, Line: token.Line}, nil
 	case TokenId:
 		return &Variable{ID: token}, nil
 	case TokenLParen:
