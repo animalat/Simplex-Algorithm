@@ -125,13 +125,13 @@ func Distribute(expr Expr) (Expr, error) {
 }
 
 func Flatten(expr Expr) (Expr, error) {
-	return nil, nil
+	return expr, nil
 }
 
 func CombineLikeTerms(expr Expr) (Expr, error) {
-	return nil, nil
+	return expr, nil
 }
 
 func ConstantFold(expr Expr) (Expr, error) {
-	return nil, nil
+	return expr, nil
 }

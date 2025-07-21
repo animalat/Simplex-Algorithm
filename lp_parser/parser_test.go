@@ -19,6 +19,11 @@ func TestParseProgram_ValidSingleDeclAndObjective(t *testing.T) {
 		Token{Type: TokenPlus, Line: 2},
 		Token{Type: TokenId, Value: "x1", Line: 2},
 		Token{Type: TokenSemiColon, Line: 2},
+		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
+		Token{Type: TokenId, Value: "x1", Line: 4},
+		Token{Type: TokenLessEqual, Line: 4},
+		Token{Type: TokenNumber, Value: "10", Line: 4},
+		Token{Type: TokenSemiColon, Line: 4},
 	)
 
 	parser := &Parser{Tokens: toks}
@@ -52,6 +57,7 @@ func TestParseProgram_MultipleDeclsAndConstraints(t *testing.T) {
 		Token{Type: TokenPlus, Line: 3},
 		Token{Type: TokenId, Value: "x2", Line: 3},
 		Token{Type: TokenSemiColon, Line: 3},
+		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
 
 		// x1 + x2 <= 10;
 		Token{Type: TokenId, Value: "x1", Line: 4},
@@ -87,6 +93,7 @@ func TestParseProgram_MissingSemicolonFails(t *testing.T) {
 		Token{Type: TokenMax, Line: 2},
 		Token{Type: TokenId, Value: "x1", Line: 2},
 		Token{Type: TokenSemiColon, Line: 2},
+		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
 	)
 
 	parser := &Parser{Tokens: toks}
@@ -122,6 +129,7 @@ func TestParseProgram_ComplexTest(t *testing.T) {
 		Token{Type: TokenAsterisk, Value: "*", Line: 3},
 		Token{Type: TokenId, Value: "x2", Line: 3},
 		Token{Type: TokenSemiColon, Value: ";", Line: 3},
+		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
 
 		// (2 - 3 / 4) * x2 >= 5;
 		Token{Type: TokenLParen, Value: "(", Line: 4},

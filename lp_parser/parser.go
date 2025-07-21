@@ -246,6 +246,10 @@ func (p *Parser) ParseProgram() (*Program, error) {
 		return nil, err
 	}
 
+	if _, err := p.Expect(TokenSubjectTo); err != nil {
+		return nil, err
+	}
+
 	var constraints []*Constraint
 	for {
 		token, err := p.Peek()
