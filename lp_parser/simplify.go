@@ -55,8 +55,29 @@ func Distribute(expr Expr) (Expr, error) {
 		}
 
 		if e.Operator.Type == TokenAsterisk {
+			rBin, okr := right.(*BinaryExpr)
+			lBin, okl := left.(*BinaryExpr)
+			rightCondition := okr && (rBin.Operator.Type == TokenPlus || rBin.Operator.Type == TokenMinus)
+			leftCondition := okl && (lBin.Operator.Type == TokenPlus || lBin.Operator.Type == TokenMinus)
+ 
+			// (a + b) * (c + d) => a * c + a * d + b * c + b * d
+			if rightCondition && leftCondition {
+				/*
+				TODO: calculate expressions
+				ac := &BinaryExpr{Left: lBin.Left, Operator: Right:}
+				*/
+				return &BinaryExpr{
+					Left: &BinaryExpr{
+						
+					},
+					Operator:
+					Right: &BinaryExpr{
+					}
+				}
+			}
+
 			// a * (b + c) => a * b + a * c
-			if rBin, ok := right.(*BinaryExpr); ok && (rBin.Operator.Type == TokenPlus || rBin.Operator.Type == TokenMinus) {
+			if rightCondition {
 				return &BinaryExpr{
 					Left: &BinaryExpr{
 						Left:     left,
@@ -73,7 +94,7 @@ func Distribute(expr Expr) (Expr, error) {
 			}
 
 			// (a + b) * c => a * c + b * c
-			if lBin, ok := left.(*BinaryExpr); ok && (lBin.Operator.Type == TokenPlus || lBin.Operator.Type == TokenMinus) {
+			if leftCondition {
 				return &BinaryExpr{
 					Left: &BinaryExpr{
 						Left:     lBin.Left,
@@ -127,7 +148,13 @@ func Distribute(expr Expr) (Expr, error) {
 func Flatten(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
 	case *Variable, *NumberLiteral:
+		return e, nil
 	case *UnaryExpr:
+		inner, err := Flatten(e.expr)
+		if err != nil {
+			return nil, err
+		}
+		
 	case *BinaryExpr:
 	}
 }
