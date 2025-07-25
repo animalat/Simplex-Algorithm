@@ -126,53 +126,9 @@ func Distribute(expr Expr) (Expr, error) {
 
 func Flatten(expr Expr) (Expr, error) {
 	switch e := expr.(type) {
-	case *NumberLiteral, *Variable:
-		return e, nil
+	case *Variable, *NumberLiteral:
 	case *UnaryExpr:
-		inner, err := Flatten(e)
-		if err != nil {
-			return nil, err
-		}
-		return &UnaryExpr{Operator: e.Operator, Expr: inner, Line: e.Line}
-	case: *BinaryExpr:
-		left, err := Flatten(e.Left)
-		if err != nil {
-			return nil, err
-		}
-		right, err := Flatten(e.Right)
-		if err != nil {
-			return nil, err
-		}
-		
-		/*
-		if e.Operator.Type == TokenPlus || e.Operator.Type == TokenMinus {
-			terms := []Expr{}
-
-			var collect func(Expr)
-			collect = func(sub Expr) {
-				if bin, ok := sub.(*BinaryExpr); ok && bin.Operator.Type == e.Operator.Type {
-					collect(bin.Left)
-					collect(bin.Right)
-				} else {
-					terms = append(terms, sub)
-				}
-			}
-
-			collect(left)
-			collect(right)
-
-			result := terms[0]
-			for i := 1; i < len(terms); i++ {
-				result = &BinaryExpr{
-					Left: result
-					Operator: e.Operator
-					Right: terms[i]
-				}
-			}
-			*/
-
-			return result, nil
-		}
+	case *BinaryExpr:
 	}
 }
 
