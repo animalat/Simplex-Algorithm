@@ -59,21 +59,22 @@ func Distribute(expr Expr) (Expr, error) {
 			lBin, okl := left.(*BinaryExpr)
 			rightCondition := okr && (rBin.Operator.Type == TokenPlus || rBin.Operator.Type == TokenMinus)
 			leftCondition := okl && (lBin.Operator.Type == TokenPlus || lBin.Operator.Type == TokenMinus)
- 
+
 			// (a + b) * (c + d) => a * c + a * d + b * c + b * d
 			if rightCondition && leftCondition {
 				/*
-				TODO: calculate expressions
-				ac := &BinaryExpr{Left: lBin.Left, Operator: Right:}
-				*/
-				return &BinaryExpr{
-					Left: &BinaryExpr{
-						
-					},
-					Operator:
-					Right: &BinaryExpr{
+					TODO: calculate expressions
+					ac := &BinaryExpr{Left: lBin.Left, Operator: Right:}
+
+					return &BinaryExpr{
+						Left: &BinaryExpr{
+
+						},
+						Operator:
+						Right: &BinaryExpr{
+						}
 					}
-				}
+				*/
 			}
 
 			// a * (b + c) => a * b + a * c
@@ -146,17 +147,20 @@ func Distribute(expr Expr) (Expr, error) {
 }
 
 func Flatten(expr Expr) (Expr, error) {
-	switch e := expr.(type) {
-	case *Variable, *NumberLiteral:
-		return e, nil
-	case *UnaryExpr:
-		inner, err := Flatten(e.expr)
-		if err != nil {
-			return nil, err
+	/*
+		switch e := expr.(type) {
+		case *Variable, *NumberLiteral:
+			return e, nil
+		case *UnaryExpr:
+			inner, err := Flatten(e.expr)
+			if err != nil {
+				return nil, err
+			}
+
+		case *BinaryExpr:
 		}
-		
-	case *BinaryExpr:
-	}
+	*/
+	return expr, nil
 }
 
 func CombineLikeTerms(expr Expr) (Expr, error) {
