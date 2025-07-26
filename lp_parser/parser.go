@@ -47,7 +47,7 @@ func (p *Parser) ParseDecl() (*Decl, error) {
 		return nil, err
 	}
 
-	token, err := p.Advance()
+	token, err := p.Expect(TokenId)
 	if err != nil {
 		return nil, err
 	}
