@@ -269,3 +269,23 @@ func (p *Parser) ParseProgram() (*Program, error) {
 
 	return &Program{Decls: decls, Objective: objective, Constraints: constraints}, nil
 }
+
+func PrintParse(p *Program) error {
+	for _, decl := range p.Decls {
+		fmt.Printf("let %s;\n", decl.ID.Value)
+	}
+
+	if p.Objective.IsMax {
+		fmt.Print("max ")
+	} else {
+		fmt.Print("min ")
+	}
+
+	fmt.Printf("%s;\n", p.Objective.Expr)
+
+	for _, constraint := range p.Constraints {
+		fmt.Printf("%s %s %s;\n", constraint.Left, constraint.Operator.Value, constraint.Right)
+	}
+
+	return nil
+}

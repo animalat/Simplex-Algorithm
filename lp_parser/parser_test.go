@@ -10,20 +10,20 @@ func tokens(ts ...Token) []Token {
 
 func TestParseProgram_ValidSingleDeclAndObjective(t *testing.T) {
 	toks := tokens(
-		Token{Type: TokenLet, Line: 1},
+		Token{Type: TokenLet, Value: "let", Line: 1},
 		Token{Type: TokenId, Value: "x1", Line: 1},
 		Token{Type: TokenSemiColon, Line: 1},
 
 		Token{Type: TokenMax, Line: 2},
 		Token{Type: TokenNumber, Value: "1", Line: 2},
-		Token{Type: TokenPlus, Line: 2},
+		Token{Type: TokenPlus, Value: "+", Line: 2},
 		Token{Type: TokenId, Value: "x1", Line: 2},
 		Token{Type: TokenSemiColon, Line: 2},
 		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
 		Token{Type: TokenId, Value: "x1", Line: 4},
-		Token{Type: TokenLessEqual, Line: 4},
+		Token{Type: TokenLessEqual, Value: "<=", Line: 4},
 		Token{Type: TokenNumber, Value: "10", Line: 4},
-		Token{Type: TokenSemiColon, Line: 4},
+		Token{Type: TokenSemiColon, Value: ";", Line: 4},
 	)
 
 	parser := &Parser{Tokens: toks}
@@ -36,6 +36,10 @@ func TestParseProgram_ValidSingleDeclAndObjective(t *testing.T) {
 	}
 	if prog.Objective == nil {
 		t.Errorf("expected objective, got nil")
+	}
+
+	if testing.Verbose() {
+		PrintParse(prog)
 	}
 }
 
@@ -54,16 +58,16 @@ func TestParseProgram_MultipleDeclsAndConstraints(t *testing.T) {
 		// max x1 + x2;
 		Token{Type: TokenMax, Line: 3},
 		Token{Type: TokenId, Value: "x1", Line: 3},
-		Token{Type: TokenPlus, Line: 3},
+		Token{Type: TokenPlus, Value: "+", Line: 3},
 		Token{Type: TokenId, Value: "x2", Line: 3},
-		Token{Type: TokenSemiColon, Line: 3},
+		Token{Type: TokenSemiColon, Value: ";", Line: 3},
 		Token{Type: TokenSubjectTo, Value: "s.t.", Line: 4},
 
 		// x1 + x2 <= 10;
 		Token{Type: TokenId, Value: "x1", Line: 4},
-		Token{Type: TokenPlus, Line: 4},
+		Token{Type: TokenPlus, Value: "+", Line: 4},
 		Token{Type: TokenId, Value: "x2", Line: 4},
-		Token{Type: TokenLessEqual, Line: 4},
+		Token{Type: TokenLessEqual, Value: "<=", Line: 4},
 		Token{Type: TokenNumber, Value: "10", Line: 4},
 		Token{Type: TokenSemiColon, Line: 4},
 	)
@@ -81,6 +85,10 @@ func TestParseProgram_MultipleDeclsAndConstraints(t *testing.T) {
 	}
 
 	t.Logf("Parsed objective expression: %v", prog.Objective.Expr)
+
+	if testing.Verbose() {
+		PrintParse(prog)
+	}
 }
 
 func TestParseProgram_MissingSemicolonFails(t *testing.T) {
@@ -172,4 +180,8 @@ func TestParseProgram_ComplexTest(t *testing.T) {
 	}
 
 	t.Logf("Parsed objective expression: %v", prog.Objective.Expr)
+
+	if testing.Verbose() {
+		PrintParse(prog)
+	}
 }
