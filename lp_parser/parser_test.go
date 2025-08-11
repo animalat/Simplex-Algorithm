@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -176,7 +177,34 @@ func TestParseProgram_ComplexTest(t *testing.T) {
 		t.Errorf("expected 2 decls, got %d", len(prog.Decls))
 	}
 	if len(prog.Constraints) != 2 {
-		t.Errorf("expected 2 constraint, got %d", len(prog.Constraints))
+		t.Errorf("expected 2 constraints, got %d", len(prog.Constraints))
+	}
+
+	t.Logf("Parsed objective expression: %v", prog.Objective.Expr)
+
+	if testing.Verbose() {
+		PrintParse(prog)
+	}
+}
+
+func TestParseProgram_DefaultTest(t *testing.T) {
+	tokens, err := Tokenize(strings.NewReader("let x1; let x2; let x3; max x1 + x2 + 3; s.t. x1 + x2 <= 3; x1 + x2 + 3 * x3 >= 5;"))
+	if err != nil {
+		t.Fatalf("Tokenize() error: %v", err)
+	}
+
+	parser := &Parser{Tokens: tokens}
+	prog, err := parser.ParseProgram()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(prog.Decls) != 3 {
+		t.Errorf("expected 3 decls, got %d", len(prog.Decls))
+	}
+
+	if len(prog.Constraints) != 2 {
+		t.Errorf("expected 2 constraints, got %d", len(prog.Constraints))
 	}
 
 	t.Logf("Parsed objective expression: %v", prog.Objective.Expr)
