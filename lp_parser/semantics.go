@@ -45,6 +45,8 @@ func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error
 		}
 
 		return nil
+	case default:
+		return fmt.Errorf("Unknown type Expr")
 	}
 }
 
