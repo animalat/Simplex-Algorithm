@@ -50,31 +50,8 @@ func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error
 
 func checkExpr(isObjectiveAndFirst bool, e *Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
-	case *Variable:
-		if _, ok = idTable[expr.ID.Value]; ok {
-			return nil
-		} else {
-			return fmt.Errorf("Undeclared variable: %s", v)
-		}
-	case *NumberLiteral:
-		if isObjectiveAndFirst {
-			return nil
-		} else {
-			return fmt.Errorf("Expected no NumberLiteral, received NumberLiteral %s", expr)
-		}
-	case *UnaryExpr:
-		inner := expr.Expr
-		if v, ok := inner.(*Variable); ok {
-			if _, ok = idTable[v.ID.Value]; ok {
-				return nil
-			} else {
-				return fmt.Errorf("Undeclared variable: %s", v)
-			}
-		} else if _, ok = inner.(*NumberLiteral); ok && isObjectiveAndFirst {
-			return nil
-		} else {
-			return fmt.Errorf("UnaryExpr with invalid Expr: %s", expr)
-		}
+	case *Variable, *NumberLiteral, *UnaryExpr:
+		return checkTerm(true, e, idTable)
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
