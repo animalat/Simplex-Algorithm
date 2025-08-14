@@ -61,7 +61,7 @@ func checkExpr(isObjectiveAndFirst bool, e *Expr, idTable map[string]bool) error
 
 		switch op.Type {
 		case TokenPlus:
-			// recurse on left, check right
+			// check right, recurse on left
 			err := checkTerm(false, right, idTable)
 			if err != nil {
 				return err
