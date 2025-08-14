@@ -1,6 +1,6 @@
 package parser
 
-func checkTerm(e *Expr, idTable map[string]bool, isObjectiveAndFirst bool) error {
+func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable:
 		if _, ok := idTable[expr.ID.Type]; !ok {
@@ -15,29 +15,53 @@ func checkTerm(e *Expr, idTable map[string]bool, isObjectiveAndFirst bool) error
 			return fmt.Errorf("Expected no NumberLiteral, received NumberLiteral %s", expr)
 		}
 	case *UnaryExpr:
-		return fmt.Errorf("Unexpected UnaryExpr: %s", expr)
+		inner := expr.Expr
+		if v, ok := inner.(*Variable); ok {
+			if _, ok = idTable[v.ID.Value]; ok {
+				return nil
+			} else {
+				return fmt.Errorf("Undeclared Variable: %s", inner)
+			}
+		} else if _, ok := inner.(*NumberLiteral); ok && isObjectiveAndFirst {
+			return nil
+		} else {
+			return fmt.Errorf("Invalid UnaryExpr: %s", expr)
+		}
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
 
-		if _, ok = left.(*NumberLiteral); !ok {
+		if _, ok := left.(*NumberLiteral); !ok {
 			return fmt.Errorf("Expected NumberLiteral, received: %s", left)
 		}
 
-		if _, ok := right.(*Variable); !ok {
+		v, ok := right.(*Variable);
+		if !ok {
 			return fmt.Errorf("Expected Variable, received: %s", right)
+		}
+
+		if _, ok = idTable[v.ID.Value]; !ok {
+			return fmt.Errorf("Undeclared Variable: %s", v)
 		}
 
 		return nil
 	}
 }
 
-func checkExpr(e *Expr, idTable map[string]bool, isObjectiveAndFirst bool) error {
+func checkExpr(isObjectiveAndFirst bool, e *Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable:
-		return nil
+		if _, ok = idTable[expr.ID.Value]; ok {
+			return nil
+		} else {
+			return fmt.Errorf("Undeclared variable: %s", v)
+		}
 	case *NumberLiteral:
-		return fmt.Errorf("Expected no NumberLiteral, received NumberLiteral %s", expr)
+		if isObjectiveAndFirst {
+			return nil
+		} else {
+			return fmt.Errorf("Expected no NumberLiteral, received NumberLiteral %s", expr)
+		}
 	case *UnaryExpr:
 		inner := expr.Expr
 		if v, ok := inner.(*Variable); ok {
@@ -49,15 +73,30 @@ func checkExpr(e *Expr, idTable map[string]bool, isObjectiveAndFirst bool) error
 		} else if _, ok = inner.(*NumberLiteral); ok && isObjectiveAndFirst {
 			return nil
 		} else {
-			return fmt.Errorf("UnaryExpr with nested Expr: %s", expr)
+			return fmt.Errorf("UnaryExpr with invalid Expr: %s", expr)
 		}
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
-		
+		op := expr.Operator
 
+		switch op.Type {
+		case TokenPlus:
+			// recurse on left, check right
+			err := checkTerm(false, right, idTable)
+			if err != nil {
+				return err
+			}
+
+			return checkExpr(true, left, idTable)
+		case TokenAsterisk:
+			return checkTerm(true, expr, idTable)
+		case default:
+			return fmt.Errorf("Invalid Expr operator: %s", expr)
+		}
+	case default:
+		return fmt.Errorf("Unknown type Expr")
 	}
-	return nil
 }
 
 func SemanticCheck(p *Program) error {
