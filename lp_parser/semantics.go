@@ -1,10 +1,12 @@
 package parser
 
-func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error {
+import "fmt"
+
+func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable:
-		if _, ok := idTable[expr.ID.Type]; !ok {
-			return fmt.Errorf("Undeclared Variable: %s", expr)
+		if _, ok := idTable[expr.ID.Value]; !ok {
+			return fmt.Errorf("undeclared Variable: %s", expr)
 		}
 
 		return nil
@@ -12,7 +14,7 @@ func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error
 		if isObjectiveAndFirst {
 			return nil
 		} else {
-			return fmt.Errorf("Expected no NumberLiteral, received NumberLiteral %s", expr)
+			return fmt.Errorf("expected no NumberLiteral, received NumberLiteral %s", expr)
 		}
 	case *UnaryExpr:
 		inner := expr.Expr
@@ -20,37 +22,38 @@ func checkTerm(bool isObjectiveAndFirst, e *Expr, idTable map[string]bool) error
 			if _, ok = idTable[v.ID.Value]; ok {
 				return nil
 			} else {
-				return fmt.Errorf("Undeclared Variable: %s", inner)
+				return fmt.Errorf("undeclared Variable: %s", inner)
 			}
 		} else if _, ok := inner.(*NumberLiteral); ok && isObjectiveAndFirst {
 			return nil
 		} else {
-			return fmt.Errorf("Invalid UnaryExpr: %s", expr)
+			return fmt.Errorf("invalid UnaryExpr: %s", expr)
 		}
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
 
+		// TODO: implement UnaryExpr with nested NumberLiteral check
 		if _, ok := left.(*NumberLiteral); !ok {
-			return fmt.Errorf("Expected NumberLiteral, received: %s", left)
+			return fmt.Errorf("expected NumberLiteral, received: %s", left)
 		}
 
-		v, ok := right.(*Variable);
+		v, ok := right.(*Variable)
 		if !ok {
-			return fmt.Errorf("Expected Variable, received: %s", right)
+			return fmt.Errorf("expected Variable, received: %s", right)
 		}
 
 		if _, ok = idTable[v.ID.Value]; !ok {
-			return fmt.Errorf("Undeclared Variable: %s", v)
+			return fmt.Errorf("undeclared Variable: %s", v)
 		}
 
 		return nil
-	case default:
-		return fmt.Errorf("Unknown type Expr")
+	default:
+		return fmt.Errorf("unknown type Expr")
 	}
 }
 
-func checkExpr(isObjectiveAndFirst bool, e *Expr, idTable map[string]bool) error {
+func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable, *NumberLiteral, *UnaryExpr:
 		return checkTerm(true, e, idTable)
@@ -62,19 +65,18 @@ func checkExpr(isObjectiveAndFirst bool, e *Expr, idTable map[string]bool) error
 		switch op.Type {
 		case TokenPlus:
 			// check right, recurse on left
-			err := checkTerm(false, right, idTable)
-			if err != nil {
+			if err := checkTerm(false, right, idTable); err != nil {
 				return err
 			}
 
 			return checkExpr(true, left, idTable)
 		case TokenAsterisk:
 			return checkTerm(true, expr, idTable)
-		case default:
-			return fmt.Errorf("Invalid Expr operator: %s", expr)
+		default:
+			return fmt.Errorf("invalid Expr operator: %s", expr)
 		}
-	case default:
-		return fmt.Errorf("Unknown type Expr")
+	default:
+		return fmt.Errorf("unknown type Expr")
 	}
 }
 
@@ -82,6 +84,10 @@ func SemanticCheck(p *Program) error {
 	idTable := make(map[string]bool)
 	for _, decl := range p.Decls {
 		idTable[decl.ID.Value] = true
+	}
+
+	if err := checkExpr(true, p.Objective.Expr, idTable); err != nil {
+		return err
 	}
 
 	return nil
