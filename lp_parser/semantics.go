@@ -49,14 +49,14 @@ func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 
 		return nil
 	default:
-		return fmt.Errorf("unknown type Expr")
+		return fmt.Errorf("unknown Expr type: &T", e)
 	}
 }
 
 func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable, *NumberLiteral, *UnaryExpr:
-		return checkTerm(true, e, idTable)
+		return checkTerm(isObjectiveAndFirst, e, idTable)
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
@@ -65,18 +65,18 @@ func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 		switch op.Type {
 		case TokenPlus:
 			// check right, recurse on left
-			if err := checkTerm(false, right, idTable); err != nil {
+			if err := checkTerm(isObjectiveAndFirst, right, idTable); err != nil {
 				return err
 			}
 
-			return checkExpr(true, left, idTable)
+			return checkExpr(false, left, idTable)
 		case TokenAsterisk:
-			return checkTerm(true, expr, idTable)
+			return checkTerm(isObjectiveAndFirst, expr, idTable)
 		default:
 			return fmt.Errorf("invalid Expr operator: %s", expr)
 		}
 	default:
-		return fmt.Errorf("unknown type Expr")
+		return fmt.Errorf("unknown Expr type: &T", e)
 	}
 }
 
