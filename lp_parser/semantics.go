@@ -2,6 +2,9 @@ package parser
 
 import "fmt"
 
+const enableObjective = true
+const disableObjective = false
+
 func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
 	case *Variable:
@@ -49,7 +52,7 @@ func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 
 		return nil
 	default:
-		return fmt.Errorf("unknown Expr type: &T", e)
+		return fmt.Errorf("unknown Expr type: %T", e)
 	}
 }
 
@@ -69,14 +72,14 @@ func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 				return err
 			}
 
-			return checkExpr(false, left, idTable)
+			return checkExpr(disableObjective, left, idTable)
 		case TokenAsterisk:
 			return checkTerm(isObjectiveAndFirst, expr, idTable)
 		default:
 			return fmt.Errorf("invalid Expr operator: %s", expr)
 		}
 	default:
-		return fmt.Errorf("unknown Expr type: &T", e)
+		return fmt.Errorf("unknown Expr type: %T", e)
 	}
 }
 
@@ -86,7 +89,7 @@ func SemanticCheck(p *Program) error {
 		idTable[decl.ID.Value] = true
 	}
 
-	if err := checkExpr(true, p.Objective.Expr, idTable); err != nil {
+	if err := checkExpr(enableObjective, p.Objective.Expr, idTable); err != nil {
 		return err
 	}
 
