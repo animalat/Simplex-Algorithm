@@ -32,8 +32,8 @@ func TestSemantics_Term(t *testing.T) {
 
 	unaryExprTest := &UnaryExpr{Operator: Token{Type: TokenMinus, Value: "-", Line: 0}, Expr: variableTest, Line: 0}
 	err = checkTerm(disableObjective, unaryExprTest, m)
-	if err != nil {
-		t.Errorf("valid UnaryExpr failed: %v", unaryExprTest)
+	if err == nil {
+		t.Errorf("invalid UnaryExpr passed: %v", unaryExprTest)
 	}
 	
 	variableTest2 := &Variable{ID: Token{Type: TokenId, Value: "x2", Line: 0}}
@@ -99,6 +99,16 @@ func TestSemantics_Expr(t *testing.T) {
 	err := assertProg(t, "let x1; let x2; let x3; max x1 + x2 + 3; s.t. x1 + x2 <= 3; x1 + x2 + 3 * x3 >= 5;")
 	if err != nil {
 		t.Errorf("valid program failed (%v)", err)
+	}
+
+	err = assertProg(t, "let x1; let x2; let x3; max 4 * x1 + 5 * x2 + 3; s.t. 5 * x1 + 3 * x2 <= 3; x1 + x2 + 3 * x3 >= 5;")
+	if err != nil {
+		t.Errorf("valid program failed (%v)", err)
+	}
+
+	err = assertProg(t, "let x1; let x2; let x3; max x1 + x2 + 3; s.t. 5 * x1 + 3 * x2 * 5 - 5 <= 3; x1 + x2 + 3 * x3 + 1 >= 5;")
+	if err == nil {
+		t.Errorf("invalid program passed")
 	}
 
 	err = assertProg(t, "let x1; let x2; max x1 + 5 + x2; s.t. x1 + x2 = 5;")

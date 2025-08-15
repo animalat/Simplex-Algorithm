@@ -20,23 +20,11 @@ func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 			return fmt.Errorf("expected no NumberLiteral, received NumberLiteral %s", expr)
 		}
 	case *UnaryExpr:
-		inner := expr.Expr
-		if v, ok := inner.(*Variable); ok {
-			if _, ok = idTable[v.ID.Value]; ok {
-				return nil
-			} else {
-				return fmt.Errorf("undeclared Variable: %s", inner)
-			}
-		} else if _, ok := inner.(*NumberLiteral); ok && isObjectiveAndFirst {
-			return nil
-		} else {
-			return fmt.Errorf("invalid UnaryExpr: %s", expr)
-		}
+		return fmt.Errorf("invalid UnaryExpr (should not have UnaryExpr at this stage): %s", expr)
 	case *BinaryExpr:
 		left := expr.Left
 		right := expr.Right
 
-		// TODO: implement UnaryExpr with nested NumberLiteral check
 		if _, ok := left.(*NumberLiteral); !ok {
 			return fmt.Errorf("expected NumberLiteral, received: %s", left)
 		}
@@ -83,6 +71,14 @@ func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 	}
 }
 
+func checkNumber(e Expr) error {
+	if _, ok := e.(*NumberLiteral); !ok {
+		return fmt.Errorf("constant not found at RHS: %v", e)
+	}
+
+	return nil
+}
+
 func SemanticCheck(p *Program) error {
 	idTable := make(map[string]bool)
 	for _, decl := range p.Decls {
@@ -91,6 +87,16 @@ func SemanticCheck(p *Program) error {
 
 	if err := checkExpr(enableObjective, p.Objective.Expr, idTable); err != nil {
 		return err
+	}
+
+	for _, constraint := range p.Constraints {
+		if err := checkExpr(disableObjective, constraint.Left, idTable); err != nil {
+			return err
+		}
+
+		if err := checkNumber(constraint.Right); err != nil {
+			return err
+		}
 	}
 
 	return nil
