@@ -139,6 +139,7 @@ func (dfa *DFA) initTransitions() {
 
 	dfa.Transitions[TransitionKey{StartingState, '<'}] = "<"
 	dfa.Transitions[TransitionKey{StartingState, '>'}] = ">"
+	dfa.Transitions[TransitionKey{StartingState, '='}] = string(TokenEqual)
 	dfa.Transitions[TransitionKey{"<", '='}] = string(TokenLessEqual)
 	dfa.Transitions[TransitionKey{">", '='}] = string(TokenGreaterEqual)
 

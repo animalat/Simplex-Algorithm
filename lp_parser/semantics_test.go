@@ -1,6 +1,9 @@
 package parser
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestSemantics_Term(t *testing.T) {
 	numberTest := &NumberLiteral{5, 0}
@@ -66,6 +69,40 @@ func TestSemantics_Term(t *testing.T) {
 	}
 }
 
-// func TestSemantics_Expr(t *testing.T) {
+func assertProg(t *testing.T, s string) error {
+	t.Helper()
 
-// }
+	tokens, err := Tokenize(strings.NewReader(s))
+	if err != nil {
+		t.Fatalf("Tokenize() error: %v", err)
+	}
+
+	parser := &Parser{Tokens: tokens}
+	prog, err := parser.ParseProgram()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	err = SemanticCheck(prog)
+	if err != nil {
+		return err
+	}
+
+	if testing.Verbose() {
+		PrintParse(prog)
+	}
+
+	return nil
+}
+
+func TestSemantics_Expr(t *testing.T) {
+	err := assertProg(t, "let x1; let x2; let x3; max x1 + x2 + 3; s.t. x1 + x2 <= 3; x1 + x2 + 3 * x3 >= 5;")
+	if err != nil {
+		t.Errorf("valid program failed (%v)", err)
+	}
+
+	err = assertProg(t, "let x1; let x2; max x1 + 5 + x2; s.t. x1 + x2 = 5;")
+	if err == nil {
+		t.Errorf("invalid program passed")
+	}
+}
