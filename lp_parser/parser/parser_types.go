@@ -1,6 +1,10 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+)
 
 type Program struct {
 	Decls       []*Decl
@@ -9,7 +13,7 @@ type Program struct {
 }
 
 type Decl struct {
-	ID Token
+	ID lexer.Token
 }
 
 type Objective struct {
@@ -19,7 +23,7 @@ type Objective struct {
 
 type Constraint struct {
 	Left     Expr
-	Operator Token
+	Operator lexer.Token
 	Right    Expr
 	Line     int
 }
@@ -29,14 +33,14 @@ type Expr interface {
 }
 
 type UnaryExpr struct {
-	Operator Token
+	Operator lexer.Token
 	Expr     Expr
 	Line     int
 }
 
 type BinaryExpr struct {
 	Left     Expr
-	Operator Token
+	Operator lexer.Token
 	Right    Expr
 	Line     int
 }
@@ -47,7 +51,7 @@ type NumberLiteral struct {
 }
 
 type Variable struct {
-	ID Token
+	ID lexer.Token
 }
 
 func (n *NumberLiteral) String() string {
@@ -67,6 +71,6 @@ func (b *BinaryExpr) String() string {
 }
 
 type Parser struct {
-	Tokens []Token
+	Tokens []lexer.Token
 	Pos    int
 }

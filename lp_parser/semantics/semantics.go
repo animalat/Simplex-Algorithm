@@ -1,35 +1,40 @@
-package parser
+package semantics
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
+)
 
 const enableObjective = true
 const disableObjective = false
 
-func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
+func checkTerm(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
-	case *Variable:
+	case *parser.Variable:
 		if _, ok := idTable[expr.ID.Value]; !ok {
 			return fmt.Errorf("undeclared Variable: %s", expr)
 		}
 
 		return nil
-	case *NumberLiteral:
+	case *parser.NumberLiteral:
 		if isObjectiveAndFirst {
 			return nil
 		} else {
 			return fmt.Errorf("expected no NumberLiteral, received NumberLiteral %s", expr)
 		}
-	case *UnaryExpr:
+	case *parser.UnaryExpr:
 		return fmt.Errorf("invalid UnaryExpr (should not have UnaryExpr at this stage): %s", expr)
-	case *BinaryExpr:
+	case *parser.BinaryExpr:
 		left := expr.Left
 		right := expr.Right
 
-		if _, ok := left.(*NumberLiteral); !ok {
+		if _, ok := left.(*parser.NumberLiteral); !ok {
 			return fmt.Errorf("expected NumberLiteral, received: %s", left)
 		}
 
-		v, ok := right.(*Variable)
+		v, ok := right.(*parser.Variable)
 		if !ok {
 			return fmt.Errorf("expected Variable, received: %s", right)
 		}
@@ -44,24 +49,24 @@ func checkTerm(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 	}
 }
 
-func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error {
+func checkExpr(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]bool) error {
 	switch expr := e.(type) {
-	case *Variable, *NumberLiteral, *UnaryExpr:
+	case *parser.Variable, *parser.NumberLiteral, *parser.UnaryExpr:
 		return checkTerm(isObjectiveAndFirst, e, idTable)
-	case *BinaryExpr:
+	case *parser.BinaryExpr:
 		left := expr.Left
 		right := expr.Right
 		op := expr.Operator
 
 		switch op.Type {
-		case TokenPlus:
+		case lexer.TokenPlus:
 			// check right, recurse on left
 			if err := checkTerm(isObjectiveAndFirst, right, idTable); err != nil {
 				return err
 			}
 
 			return checkExpr(disableObjective, left, idTable)
-		case TokenAsterisk:
+		case lexer.TokenAsterisk:
 			return checkTerm(isObjectiveAndFirst, expr, idTable)
 		default:
 			return fmt.Errorf("invalid Expr operator: %s", expr)
@@ -71,15 +76,15 @@ func checkExpr(isObjectiveAndFirst bool, e Expr, idTable map[string]bool) error 
 	}
 }
 
-func checkNumber(e Expr) error {
-	if _, ok := e.(*NumberLiteral); !ok {
+func checkNumber(e parser.Expr) error {
+	if _, ok := e.(*parser.NumberLiteral); !ok {
 		return fmt.Errorf("constant not found at RHS: %v", e)
 	}
 
 	return nil
 }
 
-func SemanticCheck(p *Program) error {
+func SemanticCheck(p *parser.Program) error {
 	idTable := make(map[string]bool)
 	for _, decl := range p.Decls {
 		idTable[decl.ID.Value] = true

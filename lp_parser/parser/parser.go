@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
 )
 
 func (u *UnaryExpr) exprNode()     {}
@@ -10,16 +12,16 @@ func (b *BinaryExpr) exprNode()    {}
 func (n *NumberLiteral) exprNode() {}
 func (v *Variable) exprNode()      {}
 
-func (p *Parser) Peek() (Token, error) {
+func (p *Parser) Peek() (lexer.Token, error) {
 	if p.Pos >= len(p.Tokens) {
 		// Return EOF token
 		const endLine = -1
-		return Token{Type: TokenEOF, Value: "", Line: endLine}, nil
+		return lexer.Token{Type: lexer.TokenEOF, Value: "", Line: endLine}, nil
 	}
 	return p.Tokens[p.Pos], nil
 }
 
-func (p *Parser) Advance() (Token, error) {
+func (p *Parser) Advance() (lexer.Token, error) {
 	token, err := p.Peek()
 	if err != nil {
 		return token, err
@@ -29,7 +31,7 @@ func (p *Parser) Advance() (Token, error) {
 	return token, nil
 }
 
-func (p *Parser) Expect(tt TokenType) (Token, error) {
+func (p *Parser) Expect(tt lexer.TokenType) (lexer.Token, error) {
 	token, err := p.Advance()
 	if err != nil {
 		return token, err
@@ -43,16 +45,16 @@ func (p *Parser) Expect(tt TokenType) (Token, error) {
 }
 
 func (p *Parser) ParseDecl() (*Decl, error) {
-	if _, err := p.Expect(TokenLet); err != nil {
+	if _, err := p.Expect(lexer.TokenLet); err != nil {
 		return nil, err
 	}
 
-	token, err := p.Expect(TokenId)
+	token, err := p.Expect(lexer.TokenId)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err = p.Expect(TokenSemiColon); err != nil {
+	if _, err = p.Expect(lexer.TokenSemiColon); err != nil {
 		return nil, err
 	}
 
@@ -65,17 +67,17 @@ func (p *Parser) ParseObjective() (*Objective, error) {
 		return nil, err
 	}
 
-	if token.Type != TokenMax && token.Type != TokenMin {
+	if token.Type != lexer.TokenMax && token.Type != lexer.TokenMin {
 		return nil, fmt.Errorf("token min or max not found at line %d", token.Line)
 	}
-	isMax := token.Type == TokenMax
+	isMax := token.Type == lexer.TokenMax
 
 	expr, err := p.ParseExpr()
 	if err != nil {
 		return nil, err
 	}
 
-	token, err = p.Expect(TokenSemiColon)
+	token, err = p.Expect(lexer.TokenSemiColon)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +95,7 @@ func (p *Parser) ParseConstraint() (*Constraint, error) {
 	if err != nil {
 		return nil, err
 	}
-	if op.Type != TokenLessEqual && op.Type != TokenEqual && op.Type != TokenGreaterEqual {
+	if op.Type != lexer.TokenLessEqual && op.Type != lexer.TokenEqual && op.Type != lexer.TokenGreaterEqual {
 		return nil, fmt.Errorf("operator not found at line %d", op.Line)
 	}
 
@@ -102,7 +104,7 @@ func (p *Parser) ParseConstraint() (*Constraint, error) {
 		return nil, err
 	}
 
-	if _, err = p.Expect(TokenSemiColon); err != nil {
+	if _, err = p.Expect(lexer.TokenSemiColon); err != nil {
 		return nil, err
 	}
 
@@ -120,7 +122,7 @@ func (p *Parser) ParseExpr() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		if token.Type != TokenPlus && token.Type != TokenMinus {
+		if token.Type != lexer.TokenPlus && token.Type != lexer.TokenMinus {
 			break
 		}
 
@@ -151,7 +153,7 @@ func (p *Parser) ParseTerm() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		if token.Type != TokenAsterisk && token.Type != TokenDivide {
+		if token.Type != lexer.TokenAsterisk && token.Type != lexer.TokenDivide {
 			break
 		}
 
@@ -177,7 +179,7 @@ func (p *Parser) ParseFactor() (Expr, error) {
 		return nil, err
 	}
 
-	if token.Type == TokenMinus || token.Type == TokenPlus {
+	if token.Type == lexer.TokenMinus || token.Type == lexer.TokenPlus {
 		op, err := p.Advance()
 		if err != nil {
 			return nil, err
@@ -198,22 +200,22 @@ func (p *Parser) ParseFactor() (Expr, error) {
 	}
 
 	switch token.Type {
-	case TokenNumber:
+	case lexer.TokenNumber:
 		const doubleSize = 64
 		value, err := strconv.ParseFloat(token.Value, doubleSize)
 		if err != nil {
 			return nil, fmt.Errorf("invalid number token at line %d", token.Line)
 		}
 		return &NumberLiteral{Value: value, Line: token.Line}, nil
-	case TokenId:
+	case lexer.TokenId:
 		return &Variable{ID: token}, nil
-	case TokenLParen:
+	case lexer.TokenLParen:
 		expr, err := p.ParseExpr()
 		if err != nil {
 			return nil, err
 		}
 
-		if _, err = p.Expect(TokenRParen); err != nil {
+		if _, err = p.Expect(lexer.TokenRParen); err != nil {
 			return nil, err
 		}
 		return expr, nil
@@ -229,7 +231,7 @@ func (p *Parser) ParseProgram() (*Program, error) {
 		if err != nil {
 			return nil, err
 		}
-		if token.Type != TokenLet {
+		if token.Type != lexer.TokenLet {
 			break
 		}
 
@@ -246,7 +248,7 @@ func (p *Parser) ParseProgram() (*Program, error) {
 		return nil, err
 	}
 
-	if _, err := p.Expect(TokenSubjectTo); err != nil {
+	if _, err := p.Expect(lexer.TokenSubjectTo); err != nil {
 		return nil, err
 	}
 
@@ -256,7 +258,7 @@ func (p *Parser) ParseProgram() (*Program, error) {
 		if err != nil {
 			return nil, err
 		}
-		if token.Type == TokenEOF {
+		if token.Type == lexer.TokenEOF {
 			break
 		}
 
