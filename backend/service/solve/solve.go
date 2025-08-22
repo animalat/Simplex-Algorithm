@@ -18,6 +18,10 @@ const pageNotFound = "404 PAGE NOT FOUND"
 const methodNotAllowed = "405 METHOD NOT ALLOWED"
 const internalServerError = "500 INTERNAL SERVER ERROR"
 
+func getObjectiveArr(p *parser.Program, map[string]bool) ([]int, error) {
+
+}
+
 func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -52,7 +56,8 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = semantics.SemanticCheck(prog); err != nil {
+	idTable, err := semantics.SemanticCheck(prog)
+	if err != nil {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return
 	}

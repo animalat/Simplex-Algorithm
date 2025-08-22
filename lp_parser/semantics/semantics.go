@@ -10,7 +10,7 @@ import (
 const enableObjective = true
 const disableObjective = false
 
-func checkTerm(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]bool) error {
+func checkTerm(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]int) error {
 	switch expr := e.(type) {
 	case *parser.Variable:
 		if _, ok := idTable[expr.ID.Value]; !ok {
@@ -49,7 +49,7 @@ func checkTerm(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]bool)
 	}
 }
 
-func checkExpr(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]bool) error {
+func checkExpr(isObjectiveAndFirst bool, e parser.Expr, idTable map[string]int) error {
 	switch expr := e.(type) {
 	case *parser.Variable, *parser.NumberLiteral, *parser.UnaryExpr:
 		return checkTerm(isObjectiveAndFirst, e, idTable)
@@ -84,25 +84,29 @@ func checkNumber(e parser.Expr) error {
 	return nil
 }
 
-func SemanticCheck(p *parser.Program) error {
-	idTable := make(map[string]bool)
-	for _, decl := range p.Decls {
-		idTable[decl.ID.Value] = true
+func SemanticCheck(p *parser.Program) (map[string]int, error) {
+	idTable := make(map[string]int)
+	for i, decl := range p.Decls {
+		if _, ok := idTable[decl.ID.Value]; ok {
+			return nil, fmt.Errorf("duplicate variable: %v", decl.ID.Value)
+		}
+
+		idTable[decl.ID.Value] = i
 	}
 
 	if err := checkExpr(enableObjective, p.Objective.Expr, idTable); err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, constraint := range p.Constraints {
 		if err := checkExpr(disableObjective, constraint.Left, idTable); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := checkNumber(constraint.Right); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return idTable, nil
 }

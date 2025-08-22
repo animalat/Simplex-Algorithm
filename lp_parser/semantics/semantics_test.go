@@ -10,7 +10,7 @@ import (
 
 func TestSemantics_Term(t *testing.T) {
 	numberTest := &parser.NumberLiteral{Value: 5, Line: 0}
-	m := make(map[string]bool)
+	m := make(map[string]int)
 	err := checkTerm(enableObjective, numberTest, m)
 	if err != nil {
 		t.Errorf("valid parser.NumberLiteral failed: %v", numberTest)
@@ -27,7 +27,7 @@ func TestSemantics_Term(t *testing.T) {
 		t.Errorf("invalid parser.Variable passed: %v", variableTest)
 	}
 
-	m[variableTest.ID.Value] = true
+	m[variableTest.ID.Value] = 0
 	err = checkTerm(disableObjective, variableTest, m)
 	if err != nil {
 		t.Errorf("valid parser.Variable failed: %v", variableTest)
@@ -64,7 +64,7 @@ func TestSemantics_Term(t *testing.T) {
 		t.Errorf("invalid parser.BinaryExpr passed: %v", binaryTest3)
 	}
 
-	m[variableTest2.ID.Value] = true
+	m[variableTest2.ID.Value] = 1
 	binaryTest4 := &parser.BinaryExpr{Left: variableTest, Operator: lexer.Token{Type: lexer.TokenAsterisk, Value: "*", Line: 0}, Right: variableTest2, Line: 0}
 	err = checkTerm(disableObjective, binaryTest4, m)
 	if err == nil {
@@ -86,7 +86,7 @@ func assertProg(t *testing.T, s string) error {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	err = SemanticCheck(prog)
+	_, err = SemanticCheck(prog)
 	if err != nil {
 		return err
 	}
