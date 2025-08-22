@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/animalat/Simplex-Algorithm/backend/service/user"
+	"github.com/animalat/Simplex-Algorithm/backend/service/solve"
 	"github.com/gorilla/mux"
 )
 
@@ -20,7 +20,7 @@ func (s *APIServer) Run() error {
 	router := mux.NewRouter()
 	subrouter := router.PathPrefix("api/v1").Subrouter()
 
-	userHandler := user.NewHandler()
+	userHandler := solve.NewHandler()
 	userHandler.RegisterRoutes(subrouter)
 
 	log.Println("Listening on", s.addr)

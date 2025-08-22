@@ -1,7 +1,6 @@
-package user
+package solve
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -19,10 +18,4 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleSolve(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusNotAllowed)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
 }
