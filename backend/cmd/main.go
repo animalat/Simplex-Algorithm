@@ -2,13 +2,14 @@ package main
 
 import (
 	"log"
+	"net/http"
 
-	"github.com/animalat/Simplex-Algorithm/backend/cmd/api"
+	"github.com/animalat/Simplex-Algorithm/backend/service/solve"
 )
 
 func main() {
-	server := api.NewAPIServer(":8080")
-	if err := server.Run(); err != nil {
-		log.Fatal(err)
-	}
+	http.HandleFunc("/solve", solve.HandleSolve)
+
+	const port = ":8080"
+	log.Fatal(http.ListenAndServe(port, nil))
 }

@@ -12,6 +12,10 @@ func (b *BinaryExpr) exprNode()    {}
 func (n *NumberLiteral) exprNode() {}
 func (v *Variable) exprNode()      {}
 
+func ConstructParser(tokens []lexer.Token) *Parser {
+	return &Parser{Tokens: tokens}
+}
+
 func (p *Parser) Peek() (lexer.Token, error) {
 	if p.Pos >= len(p.Tokens) {
 		// Return EOF token
