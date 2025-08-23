@@ -11,6 +11,8 @@ import (
 	"github.com/animalat/Simplex-Algorithm/lp_parser/semantics"
 )
 
+const EPSILON = 1e-9
+
 const solvePath = "/solve"
 const methodPost = "POST"
 
