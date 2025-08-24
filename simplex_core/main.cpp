@@ -2,6 +2,17 @@
 #include "matrix/ExtraMatrixFunctions.h"
 #include "simplex/Simplex.h"
 
+std::string getResultTypeString(LPResultType type) {
+    switch (type) {
+        case LPResultType::INFEASIBLE:
+            return "infeasible";
+        case LPResultType::OPTIMAL:
+            return "optimal";
+        case LPResultType::UNBOUNDED:
+            return "unbounded";
+    }
+}
+
 int main() {
     // Enter matrices:
     Matrix A = readAndInitializeMatrix();
@@ -17,7 +28,7 @@ int main() {
     LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
     
     twoPhase(C, z, A, B, res);
-    std::cout << res.certificate << res.solution << (res.type == LPResultType::INFEASIBLE);
+    std::cout << res.certificate << res.solution << getResultTypeString(res.type);
 
     return 0;
 }

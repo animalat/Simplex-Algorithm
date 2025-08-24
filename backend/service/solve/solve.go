@@ -3,6 +3,7 @@ package solve
 import (
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
@@ -117,13 +118,16 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toPositive := allFreeVariables(idTable, make(map[string]struct{}))
-	objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS, err := simplexInput(SimplexProgramArrays{objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack}, toPositive, idTable)
+	progStrings, err := simplexInput(SimplexProgramArrays{objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack}, toPositive, idTable)
 	if err != nil {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return
 	}
 
-	output, err := callSimplex(SimplexProgramStrings{objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS}, rowSize, colSize)
+	rowSize := strconv.Itoa(len(constraintsLHS))
+	// before converted colSize + number of slack variables we added + number of complementary variables we added (complementary := a - b for a, b >= 0)
+	colSize := strconv.Itoa(numSlack + len(toPositive) + len(objective))
+	output, err := callSimplex(progStrings, rowSize, colSize)
 	if err != nil {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return
