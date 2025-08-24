@@ -117,7 +117,13 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toPositive := allFreeVariables(idTable, make(map[string]struct{}))
-	objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS, err := simplexInput(objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack, toPositive, idTable)
+	objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS, err := simplexInput(SimplexProgramArrays{objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack}, toPositive, idTable)
+	if err != nil {
+		http.Error(w, badRequest, http.StatusBadRequest)
+		return
+	}
+
+	output, err := callSimplex(SimplexProgramStrings{objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS}, rowSize, colSize)
 	if err != nil {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return

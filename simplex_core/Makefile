@@ -1,6 +1,7 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -g -O0 -std=c++17 -Wall -Wextra -I./matrix -I./simplex -I./common
+CXXFLAGSUNOPTIMIZED := -g -O0 -std=c++17 -Wall -Wextra -I./matrix -I./simplex -I./common
+CXXFLAGS := -g -std=c++17 -Wall -Wextra -I./matrix -I./simplex -I./common
 
 # Source files
 SRCS := main.cpp \
@@ -13,7 +14,7 @@ SRCS := main.cpp \
 OBJS := $(SRCS:.cpp=.o)
 
 # Target executable
-TARGET := main
+TARGET := simplex_solver
 
 # Default target
 all: $(TARGET)

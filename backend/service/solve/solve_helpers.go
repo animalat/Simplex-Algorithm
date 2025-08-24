@@ -1,18 +1,30 @@
 package solve
 
 import (
+	"bytes"
 	"fmt"
 	"math"
-	"strconv"
+	"os/exec"
 	"strings"
 
 	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
 	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
 )
 
-// float to string
-func ftos(num float64) string {
-	return strconv.FormatFloat(num, 'g', -1, 64)
+type SimplexProgramArrays struct {
+	objective        []float64
+	objectiveConst   float64
+	constraintsLHS   [][]float64
+	constraintsRHS   []float64
+	constraintsSlack []float64
+	numSlack         int
+}
+
+type SimplexProgramStrings struct {
+	objectiveOutput      string
+	objectiveConstOutput string
+	constraintsOutputLHS []string
+	constraintsOutputRHS string
 }
 
 func insertElem(objective []float64, objectiveConst *float64, e parser.Expr, idTable map[string]int, isObjective bool) error {
@@ -103,15 +115,6 @@ func allFreeVariables(idTable map[string]int, alreadyPositive map[string]struct{
 	return toPositive
 }
 
-func getTableInverse(table map[string]int) map[int]string {
-	inverse := make(map[int]string)
-	for key := range table {
-		inverse[table[key]] = key
-	}
-
-	return inverse
-}
-
 func rowInput(row []float64, toPositive map[string]struct{}, idTableInverse map[int]string) (string, error) {
 	output := ""
 	for i := 0; i < len(row); i++ {
@@ -145,12 +148,18 @@ func getSlackOutput(numSlackAdded *int, constraintSlack float64, numSlack int) (
 	return strings.Repeat("0 ", *numSlackAdded) + ftos(constraintSlack) + " " + strings.Repeat("0 ", rightZeroAmount), nil
 }
 
-func simplexInput(objective []float64, objectiveConst float64, constraintsLHS [][]float64, constraintsRHS []float64,
-	constraintsSlack []float64, numSlack int, toPositive map[string]struct{}, idTable map[string]int) (string, string, []string, string, error) {
+func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{}, idTable map[string]int) (SimplexProgramStrings, error) {
+	objective := progArrays.objective
+	objectiveConst := progArrays.objectiveConst
+	constraintsLHS := progArrays.constraintsLHS
+	constraintsRHS := progArrays.constraintsRHS
+	constraintsSlack := progArrays.constraintsSlack
+	numSlack := progArrays.numSlack
+
 	idTableInverse := getTableInverse(idTable)
 	objectiveOutput, err := rowInput(objective, toPositive, idTableInverse)
 	if err != nil {
-		return "", "", nil, "", err
+		return SimplexProgramStrings{}, err
 	}
 	objectiveOutput += strings.Repeat("0 ", numSlack)
 	objectiveConstOutput := ftos(objectiveConst)
@@ -160,11 +169,11 @@ func simplexInput(objective []float64, objectiveConst float64, constraintsLHS []
 	for i := range constraintsLHS {
 		curRowOutput, err := rowInput(constraintsLHS[i], toPositive, idTableInverse)
 		if err != nil {
-			return "", "", nil, "", err
+			return SimplexProgramStrings{}, err
 		}
 		endingStr, err := getSlackOutput(&numSlackAdded, constraintsSlack[i], numSlack)
 		if err != nil {
-			return "", "", nil, "", err
+			return SimplexProgramStrings{}, err
 		}
 		curRowOutput += endingStr + "\n"
 		constraintsOutputLHS = append(constraintsOutputLHS, curRowOutput)
@@ -175,5 +184,38 @@ func simplexInput(objective []float64, objectiveConst float64, constraintsLHS []
 		constraintsOutputRHS += ftos(val) + " "
 	}
 
-	return objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS, nil
+	return SimplexProgramStrings{objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS}, nil
+}
+
+func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize string) (string, error) {
+	objectiveOutput := progStrings.objectiveOutput
+	objectiveConstOutput := progStrings.objectiveConstOutput
+	constraintsOutputLHS := progStrings.constraintsOutputLHS
+	constraintsOutputRHS := progStrings.constraintsOutputRHS
+
+	cmd := exec.Command("../../../simplex_core/simplex_solver")
+
+	input := ""
+	// main matrix, LHS constraints (A)
+	input += rowSize + "\n" + colSize + "\n"
+	for _, curStr := range constraintsOutputLHS {
+		input += curStr + "\n"
+	}
+	// RHS constraints (B)
+	input += rowSize + "\n1\n"
+	input += constraintsOutputRHS + "\n"
+	// objective (C)
+	input += "1\n" + colSize + "\n"
+	input += objectiveOutput + "\n"
+	// objective constant (z)
+	input += objectiveConstOutput + "\n"
+
+	cmd.Stdin = bytes.NewBufferString(input)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error running solver: %v\noutput: %s", err, string(output))
+	}
+
+	return string(output), nil
 }
