@@ -1,7 +1,6 @@
 package solve
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -23,83 +22,6 @@ const internalServerError = "500 INTERNAL SERVER ERROR"
 
 const enableObjective = true
 const disableObjective = false
-
-func insertElem(objective []float64, objectiveConst *float64, e parser.Expr, idTable map[string]int, isObjective bool) error {
-	switch expr := e.(type) {
-	case *parser.NumberLiteral:
-		if !isObjective {
-			return fmt.Errorf("unexpected NumberLiteral in non-objective Expr: %v", expr)
-		}
-
-		*objectiveConst = expr.Value
-	case *parser.Variable:
-		idx, ok := idTable[expr.ID.Value]
-		if !ok {
-			return fmt.Errorf("undeclared variable: %v", expr)
-		}
-		// 1 because just a variable would be "1"
-		objective[idx] = 1
-	case *parser.BinaryExpr:
-		if expr.Operator.Type != lexer.TokenAsterisk {
-			return fmt.Errorf("unexpected term: %v", expr)
-		}
-
-		// this is the last expr
-		v, ok := expr.Right.(*parser.Variable)
-		if !ok {
-			return fmt.Errorf("unexpected type: %T", expr.Right)
-		}
-
-		nl, ok := expr.Left.(*parser.NumberLiteral)
-		if !ok {
-			return fmt.Errorf("unexpected type: %T", expr.Left)
-		}
-
-		idx, ok := idTable[v.ID.Value]
-		if !ok {
-			return fmt.Errorf("undeclared variable: %v", expr)
-		}
-		objective[idx] = nl.Value
-	default:
-		return fmt.Errorf("unexpected type: %T", expr)
-	}
-
-	return nil
-}
-
-// Requires: semantics must be run on the program before passing (this is not a semantics check)
-func getExprArr(e parser.Expr, idTable map[string]int, isObjective bool) (float64, []float64, error) {
-	objective := make([]float64, len(idTable))
-	objectiveConst := 0.0
-
-	curExpr := e
-
-	for {
-		switch expr := curExpr.(type) {
-		case *parser.NumberLiteral, *parser.Variable:
-			if err := insertElem(objective, &objectiveConst, expr, idTable, isObjective); err != nil {
-				return 0, nil, err
-			}
-			return objectiveConst, objective, nil
-		case *parser.BinaryExpr:
-			if expr.Operator.Type == lexer.TokenAsterisk {
-				if err := insertElem(objective, &objectiveConst, expr, idTable, isObjective); err != nil {
-					return 0, nil, err
-				}
-				return objectiveConst, objective, nil
-			}
-
-			// otherwise, we grab the expr, and then check left
-			if err := insertElem(objective, &objectiveConst, expr.Right, idTable, isObjective); err != nil {
-				return 0, nil, err
-			}
-
-			curExpr = expr.Left
-		default:
-			return 0, nil, fmt.Errorf("unexpected type: %T", expr)
-		}
-	}
-}
 
 func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	// TODO: handle malicious input
@@ -160,6 +82,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	constraintsLHS := make([][]float64, 0, len(prog.Constraints))
 	constraintsRHS := make([]float64, 0, len(prog.Constraints))
 	constraintsSlack := make([]float64, len(prog.Constraints))
+	numSlack := 0
 	for i, constraint := range prog.Constraints {
 		_, curConstraintArr, err := getExprArr(constraint.Left, idTable, disableObjective)
 		if err != nil {
@@ -177,14 +100,27 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 
 		switch constraint.Operator.Type {
 		case lexer.TokenLessEqual:
+			numSlack++
 			// 1 because we're adding on just a ("1 * s") slack variable
 			constraintsSlack[i] = 1
+		case lexer.TokenEqual:
+			continue
 		case lexer.TokenGreaterEqual:
+			numSlack++
 			// -1 because we're subtracting a slack variable ("-1 * s")
 			constraintsSlack[i] = -1
 		default:
-			continue
+			// shouldn't have any other operator types
+			http.Error(w, badRequest, http.StatusBadRequest)
+			return
 		}
+	}
+
+	toPositive := allFreeVariables(idTable, make(map[string]struct{}))
+	objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS, err := simplexInput(objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack, toPositive, idTable)
+	if err != nil {
+		http.Error(w, badRequest, http.StatusBadRequest)
+		return
 	}
 	// TODO: combine constraintsLHS and constraintsSlack
 	// TODO: add zeroes onto objective to correspond to slack variables
