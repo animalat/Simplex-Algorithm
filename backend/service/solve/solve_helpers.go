@@ -27,6 +27,12 @@ type SimplexProgramStrings struct {
 	constraintsOutputRHS string
 }
 
+type SimplexResult struct {
+	Solution    []float64 `json:"solution"`
+	ResultType  string    `json:"resultType"`
+	Certificate []float64 `json:"certificate"`
+}
+
 func insertElem(objective []float64, objectiveConst *float64, e parser.Expr, idTable map[string]int, isObjective bool) error {
 	switch expr := e.(type) {
 	case *parser.NumberLiteral:
@@ -184,7 +190,12 @@ func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{
 		constraintsOutputRHS += ftos(val) + " "
 	}
 
-	return SimplexProgramStrings{objectiveOutput, objectiveConstOutput, constraintsOutputLHS, constraintsOutputRHS}, nil
+	return SimplexProgramStrings{
+		objectiveOutput:      objectiveOutput,
+		objectiveConstOutput: objectiveConstOutput,
+		constraintsOutputLHS: constraintsOutputLHS,
+		constraintsOutputRHS: constraintsOutputRHS,
+	}, nil
 }
 
 func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize string) (string, error) {
@@ -218,4 +229,42 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 	}
 
 	return string(output), nil
+}
+
+func parseResult(output string) (SimplexResult, error) {
+	r := strings.NewReader(output)
+
+	var solution []float64
+	for r.Len() > 0 {
+		var x float64
+		_, err := fmt.Fscan(r, &x)
+		if err != nil {
+			break
+		}
+
+		solution = append(solution, x)
+	}
+
+	var resultType string
+	_, err := fmt.Fscan(r, &resultType)
+	if err != nil {
+		return SimplexResult{}, fmt.Errorf("no resultType found")
+	}
+
+	var certificate []float64
+	for r.Len() > 0 {
+		var x float64
+		_, err := fmt.Fscan(r, &x)
+		if err != nil {
+			break
+		}
+
+		certificate = append(certificate, x)
+	}
+
+	return SimplexResult{
+		Solution:    solution,
+		ResultType:  resultType,
+		Certificate: certificate,
+	}, nil
 }

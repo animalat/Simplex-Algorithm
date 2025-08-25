@@ -1,6 +1,7 @@
 package solve
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -14,11 +15,15 @@ import (
 const EPSILON = 1e-9
 
 const solvePath = "/solve"
+const textPlain = "text/plain"
+const applicationJson = "application/json"
 const methodPost = "POST"
+const contentType = "Content-Type"
 
 const badRequest = "400 BAD REQUEST"
 const pageNotFound = "404 PAGE NOT FOUND"
 const methodNotAllowed = "405 METHOD NOT ALLOWED"
+const unsupportedMediaType = "415 UNSUPPORTED MEDIA TYPE"
 const internalServerError = "500 INTERNAL SERVER ERROR"
 
 const enableObjective = true
@@ -35,6 +40,11 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != methodPost {
 		http.Error(w, methodNotAllowed, http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.Header.Get(contentType) != textPlain {
+		http.Error(w, unsupportedMediaType, http.StatusUnsupportedMediaType)
 		return
 	}
 
@@ -118,7 +128,15 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	toPositive := allFreeVariables(idTable, make(map[string]struct{}))
-	progStrings, err := simplexInput(SimplexProgramArrays{objective, objectiveConst, constraintsLHS, constraintsRHS, constraintsSlack, numSlack}, toPositive, idTable)
+	progArrays := SimplexProgramArrays{
+		objective:        objective,
+		objectiveConst:   objectiveConst,
+		constraintsLHS:   constraintsLHS,
+		constraintsRHS:   constraintsRHS,
+		constraintsSlack: constraintsSlack,
+		numSlack:         numSlack,
+	}
+	progStrings, err := simplexInput(progArrays, toPositive, idTable)
 	if err != nil {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return
@@ -132,7 +150,14 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, badRequest, http.StatusBadRequest)
 		return
 	}
-	// TODO: combine constraintsLHS and constraintsSlack
-	// TODO: add zeroes onto objective to correspond to slack variables
-	// TODO: force positive variables (maybe even recognize variables already >= 0 and also flip variables <= 0? later...)
+
+	res, err := parseResult(output)
+	if err != nil {
+		http.Error(w, badRequest, http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set(contentType, applicationJson)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
