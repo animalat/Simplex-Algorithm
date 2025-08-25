@@ -68,7 +68,7 @@ int getLengthOfNum(float num) {
     return width + 1 + DECIMAL_PRECISION;
 }
 
-std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
+std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
     // get column spacing for each column
     std::vector<int> columnSpacing(matrix.getCols(), 0);
     for (int y = 0; y < matrix.getRows(); ++y) {
@@ -94,7 +94,7 @@ std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
 }
 
 // Read matrix
-std::istream& operator>>(std::istream& is, Matrix& matrix) {
+std::istream &operator>>(std::istream &is, Matrix &matrix) {
     for (int y = 0; y < matrix.getRows(); ++y) {
         for (int x = 0; x < matrix.getCols(); ++x) {
             double curEntry;
@@ -105,6 +105,15 @@ std::istream& operator>>(std::istream& is, Matrix& matrix) {
         }
     }
     return is;
+}
+
+void printMatrixBasic(std::ostream &os, const Matrix &matrix) {
+    for (int y = 0; y < matrix.getRows(); ++y) {
+        for (int x = 0; x < matrix.getCols(); ++x) {
+            os << matrix(y, x) << " ";
+        }
+    }
+    return;
 }
 
 Matrix readAndInitializeMatrix() {

@@ -32,6 +32,8 @@ struct PhaseIResult {
     Matrix certificate;
 };
 
+std::string getResultTypeString(LPResultType type);
+
 /**
  * Transforms the LP into canonical form (suitable for the simplex algorithm).
  * 

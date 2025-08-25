@@ -6,6 +6,19 @@
 #include <algorithm>
 #include <limits>
 
+std::string getResultTypeString(LPResultType type) {
+    switch (type) {
+        case LPResultType::INFEASIBLE:
+            return "infeasible";
+        case LPResultType::OPTIMAL:
+            return "optimal";
+        case LPResultType::UNBOUNDED:
+            return "unbounded";
+        default:
+            throw std::invalid_argument("Invalid type in LPResultType");
+    }
+}
+
 Matrix getSubMatrix(const Matrix &matrix, const std::vector<int> &basis) {
     Matrix subMatrix(matrix.getRows(), convertToInt(basis.size()));
     for (int x = 0; x < convertToInt(basis.size()); ++x) {
