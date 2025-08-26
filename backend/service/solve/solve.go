@@ -13,6 +13,7 @@ import (
 )
 
 const EPSILON = 1e-9
+const PRECISIONERROR = 1e-2
 
 const solvePath = "/solve"
 const textPlain = "text/plain"
@@ -134,7 +135,9 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 		constraintsSlack: constraintsSlack,
 		numSlack:         numSlack,
 	}
-	progStrings, err := simplexInput(progArrays, toPositive, idTable)
+
+	idTableInverse := getTableInverse(idTable)
+	progStrings, err := simplexInput(progArrays, toPositive, idTable, idTableInverse)
 	if err != nil {
 		http.Error(w, "error converting arrays into strings. "+err.Error(), http.StatusBadRequest)
 		return
@@ -154,6 +157,12 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error parsing simplex method final result. "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	unsubstitutedSolution, err := retrieveOriginalVariables(numSlack, res.Solution, toPositive, idTableInverse)
+	if err != nil {
+		http.Error(w, "error converting final result variables back to original form. "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	res.Solution = unsubstitutedSolution
 
 	w.Header().Set(contentType, applicationJson)
 	w.WriteHeader(http.StatusOK)

@@ -3,7 +3,6 @@ package solve
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"math"
 	"os/exec"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
 )
 
+// Array version of linear program (to be converted into input for the Simplex calculator)
 type SimplexProgramArrays struct {
 	objective        []float64
 	objectiveConst   float64
@@ -21,6 +21,7 @@ type SimplexProgramArrays struct {
 	numSlack         int
 }
 
+// Input that is passed into the Simplex calculator
 type SimplexProgramStrings struct {
 	objectiveOutput      string
 	objectiveConstOutput string
@@ -28,12 +29,14 @@ type SimplexProgramStrings struct {
 	constraintsOutputRHS string
 }
 
+// API output
 type SimplexResult struct {
 	Solution    []float64 `json:"solution"`
 	ResultType  string    `json:"resultType"`
 	Certificate []float64 `json:"certificate"`
 }
 
+// Insert element from an Expr to an array version of that Expr
 func insertElem(objective []float64, objectiveConst *float64, e parser.Expr, idTable map[string]int, isObjective bool) error {
 	switch expr := e.(type) {
 	case *parser.NumberLiteral:
@@ -77,6 +80,7 @@ func insertElem(objective []float64, objectiveConst *float64, e parser.Expr, idT
 	return nil
 }
 
+// This function takes an Expr and turns it into an array (and possibly an extra constant for the objective function)
 // Requires: semantics must be run on the program before passing (this is not a semantics check)
 func getExprArr(e parser.Expr, idTable map[string]int, isObjective bool) (float64, []float64, error) {
 	objective := make([]float64, len(idTable))
@@ -111,6 +115,7 @@ func getExprArr(e parser.Expr, idTable map[string]int, isObjective bool) (float6
 	}
 }
 
+// This determines all free variables given already positive variables
 func allFreeVariables(idTable map[string]int, alreadyPositive map[string]struct{}) map[string]struct{} {
 	toPositive := make(map[string]struct{})
 	for key := range idTable {
@@ -122,6 +127,7 @@ func allFreeVariables(idTable map[string]int, alreadyPositive map[string]struct{
 	return toPositive
 }
 
+// Uses x := a - b for a, b >= 0 to help turn the LP into standard equality form
 func rowInput(row []float64, toPositive map[string]struct{}, idTableInverse map[int]string) (string, error) {
 	output := ""
 	for i := 0; i < len(row); i++ {
@@ -132,14 +138,15 @@ func rowInput(row []float64, toPositive map[string]struct{}, idTableInverse map[
 
 		output += ftos(row[i]) + " "
 
-		if _, ok = toPositive[variable]; !ok {
+		if _, ok = toPositive[variable]; ok {
 			// we need to add on the subtract too
-			output += ftos(-row[i])
+			output += ftos(-row[i]) + " "
 		}
 	}
 	return output, nil
 }
 
+// Add on slack variables to the linear program (help turn it into standard equality form)
 func getSlackOutput(numSlackAdded *int, constraintSlack float64, numSlack int) (string, error) {
 	if math.Abs(constraintSlack) < EPSILON {
 		// no slack variable
@@ -151,11 +158,13 @@ func getSlackOutput(numSlackAdded *int, constraintSlack float64, numSlack int) (
 	}
 
 	rightZeroAmount := numSlack - 1 - (*numSlackAdded)
+	slackStr := strings.Repeat("0 ", *numSlackAdded) + ftos(constraintSlack) + " " + strings.Repeat("0 ", rightZeroAmount)
 	*numSlackAdded++
-	return strings.Repeat("0 ", *numSlackAdded) + ftos(constraintSlack) + " " + strings.Repeat("0 ", rightZeroAmount), nil
+	return slackStr, nil
 }
 
-func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{}, idTable map[string]int) (SimplexProgramStrings, error) {
+// Prepares linear program to be passed into Simplex calculator (gets string to input)
+func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{}, idTable map[string]int, idTableInverse map[int]string) (SimplexProgramStrings, error) {
 	objective := progArrays.objective
 	objectiveConst := progArrays.objectiveConst
 	constraintsLHS := progArrays.constraintsLHS
@@ -163,7 +172,6 @@ func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{
 	constraintsSlack := progArrays.constraintsSlack
 	numSlack := progArrays.numSlack
 
-	idTableInverse := getTableInverse(idTable)
 	objectiveOutput, err := rowInput(objective, toPositive, idTableInverse)
 	if err != nil {
 		return SimplexProgramStrings{}, err
@@ -199,6 +207,7 @@ func simplexInput(progArrays SimplexProgramArrays, toPositive map[string]struct{
 	}, nil
 }
 
+// Calls the Simplex calculator (C++)
 func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize string) (string, error) {
 	objectiveOutput := progStrings.objectiveOutput
 	objectiveConstOutput := progStrings.objectiveConstOutput
@@ -225,7 +234,6 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 	cmd.Stdin = bytes.NewBufferString(input)
 
 	output, err := cmd.CombinedOutput()
-	log.Println(input)
 	if err != nil {
 		return "", fmt.Errorf("error running solver: %v\noutput: %s", err, string(output))
 	}
@@ -233,6 +241,7 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 	return string(output), nil
 }
 
+// Gets the raw result from the Simplex calculator
 func parseResult(output string) (SimplexResult, error) {
 	r := strings.NewReader(output)
 
@@ -264,11 +273,41 @@ func parseResult(output string) (SimplexResult, error) {
 		certificate = append(certificate, x)
 	}
 
-	log.Printf("hello, %s", resultType)
-
 	return SimplexResult{
 		Solution:    solution,
 		ResultType:  resultType,
 		Certificate: certificate,
 	}, nil
+}
+
+// Determines the optimal values of the Linear Program using the output of the Simplex calculator
+func retrieveOriginalVariables(numSlack int, arr []float64, toPositive map[string]struct{}, idTableInverse map[int]string) ([]float64, error) {
+	curVariableIdx := 0
+	var newSolution []float64
+	for i := 0; i < len(arr); i++ {
+		// stop if it's just slack variables left
+		if i >= len(arr)-numSlack {
+			break
+		}
+
+		variable, ok := idTableInverse[curVariableIdx]
+		if !ok {
+			return []float64{}, fmt.Errorf("invalid variable index found at index %d, variable number %d", i, curVariableIdx)
+		}
+
+		// if we substituted to make a free variable positive, undo the substitution
+		if _, ok = toPositive[variable]; ok {
+			if i+1 >= len(arr) {
+				return []float64{}, fmt.Errorf("non-positive variable found without nonnegative substitutes at index %d, variable number %d", i, curVariableIdx)
+			}
+			newSolution = append(newSolution, arr[i]-arr[i+1])
+			i++
+			curVariableIdx++
+		} else {
+			newSolution = append(newSolution, arr[i])
+			curVariableIdx++
+		}
+	}
+
+	return newSolution, nil
 }

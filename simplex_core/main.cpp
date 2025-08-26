@@ -33,7 +33,10 @@ int main(int argc, char *argv[]) {
         std::cout << "Please enter the constant for the objective function." << std::endl;
         std::cin >> z;
     } else {
-        std::cin >> A >> B >> C >> z;
+        A = readAndInitializeMatrixQuiet();
+        B = readAndInitializeMatrixQuiet();
+        C = readAndInitializeMatrixQuiet();
+        std::cin >> z;
     }
 
     twoPhase(C, z, A, B, res);

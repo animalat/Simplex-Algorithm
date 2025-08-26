@@ -135,6 +135,22 @@ Matrix readAndInitializeMatrix() {
     return result;
 }
 
+Matrix readAndInitializeMatrixQuiet() {
+    int numRows, numCols;
+
+    if (!(std::cin >> numRows)) {
+        throw std::runtime_error("Invalid input for numRows");
+    }
+    if (!(std::cin >> numCols)) {
+        throw std::runtime_error("Invalid input for numCols");
+    }
+    
+    Matrix result(numRows, numCols);
+    std::cin >> result;
+
+    return result;
+}
+
 // Operations
 Matrix Matrix::operator*(const Matrix &rhs) const {
     if (this->getCols() != rhs.getRows()) {

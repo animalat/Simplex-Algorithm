@@ -31,5 +31,6 @@ class Matrix {
 
 void printMatrixBasic(std::ostream &os, const Matrix &matrix);
 Matrix readAndInitializeMatrix();
+Matrix readAndInitializeMatrixQuiet();
 
 #endif

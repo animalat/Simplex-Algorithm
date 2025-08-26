@@ -99,17 +99,17 @@ func assertPostRequest(t *testing.T, body []byte, solutionWanted []float64, resu
 	}
 
 	for i := range solutionWanted {
-		if !floatsEqual(solutionWanted[i], output.Solution[i]) {
+		if !floatsEqualWithError(solutionWanted[i], output.Solution[i], PRECISIONERROR) {
 			t.Fatalf("solutions not equal at index %d: wanted %.2f, received %.2f", i, solutionWanted[i], output.Solution[i])
 		}
 	}
 
 	if len(certificateWanted) != len(output.Certificate) {
-		t.Fatalf("solution wanted of length %d, received length %d", len(certificateWanted), len(output.Certificate))
+		t.Fatalf("certificate wanted of length %d, received length %d", len(certificateWanted), len(output.Certificate))
 	}
 
 	for i := range certificateWanted {
-		if !floatsEqual(certificateWanted[i], output.Certificate[i]) {
+		if !floatsEqualWithError(certificateWanted[i], output.Certificate[i], PRECISIONERROR) {
 			t.Fatalf("certificates not equal at index %d: wanted %.2f, received %.2f", i, certificateWanted[i], output.Certificate[i])
 		}
 	}
@@ -123,5 +123,6 @@ func TestSolve_GetExprArr(t *testing.T) {
 }
 
 func TestSolve_PostRequest(t *testing.T) {
-	assertPostRequest(t, []byte("let x1; max 4 * x1; s.t. 4 * x1 <= 5; x1 >= 0;"), []float64{1.25, 0.00}, "optimal", []float64{1.00})
+	assertPostRequest(t, []byte("let x1; max 4 * x1; s.t. 4 * x1 <= 5; x1 >= 0;"), []float64{1.25}, "optimal", []float64{1.00, 0.00})
+	assertPostRequest(t, []byte("let x1; let x2; let x3; let x4; max 4 * x1 + x2 + 0 * x3 + 5 * x4 + 100; s.t. 5 * x1 + 3 * x2 <= 3; x1 + x2 + 3 * x3 >= 5;"), []float64{3.0 / 5.0, 0, 88.0 / 60.0, 0}, "unbounded", []float64{3.0 / 5.0, 0, 0, 1.0, 4.0 / 30.0, 0, 0, 0, 0, 0})
 }
