@@ -17,21 +17,27 @@ int main(int argc, char *argv[]) {
     }
 
     // Enter matrices:
-    Matrix A = readAndInitializeMatrix();
-    std::cout << A;
-    Matrix B = readAndInitializeMatrix();
-    std::cout << B;
-    Matrix C = readAndInitializeMatrix();
-    std::cout << C;
+    Matrix A;
+    Matrix B;
+    Matrix C;
     double z;
-    std::cin >> z;
 
     std::vector<int> basis{0, 2, 4, 5};
     LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
     
+    const std::string humanReadableFlag = "--humanReadable";
+    if (progArgument == humanReadableFlag) {
+        A = readAndInitializeMatrix();
+        B = readAndInitializeMatrix();
+        C = readAndInitializeMatrix();
+        std::cout << "Please enter the constant for the objective function." << std::endl;
+        std::cin >> z;
+    } else {
+        std::cin >> A >> B >> C >> z;
+    }
+
     twoPhase(C, z, A, B, res);
 
-    const std::string humanReadableFlag = "--humanReadable";
     if (progArgument == humanReadableFlag) {
         std::cout << res.solution << getResultTypeString(res.type) << res.certificate;
     } else {

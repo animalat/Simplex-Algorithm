@@ -3,6 +3,7 @@ package solve
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math"
 	"os/exec"
 	"strings"
@@ -224,6 +225,7 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 	cmd.Stdin = bytes.NewBufferString(input)
 
 	output, err := cmd.CombinedOutput()
+	log.Println(input)
 	if err != nil {
 		return "", fmt.Errorf("error running solver: %v\noutput: %s", err, string(output))
 	}
@@ -261,6 +263,8 @@ func parseResult(output string) (SimplexResult, error) {
 
 		certificate = append(certificate, x)
 	}
+
+	log.Printf("hello, %s", resultType)
 
 	return SimplexResult{
 		Solution:    solution,

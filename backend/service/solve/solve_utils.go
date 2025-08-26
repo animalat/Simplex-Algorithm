@@ -1,10 +1,17 @@
 package solve
 
-import "strconv"
+import (
+	"math"
+	"strconv"
+)
 
 // float to string
 func ftos(num float64) string {
 	return strconv.FormatFloat(num, 'g', -1, 64)
+}
+
+func floatsEqual(a float64, b float64) bool {
+	return math.Abs(a-b) < EPSILON
 }
 
 func getTableInverse(table map[string]int) map[int]string {
