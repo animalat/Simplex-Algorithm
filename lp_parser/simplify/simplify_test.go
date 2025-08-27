@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
 )
 
 func TestSimplify_Distribute(t *testing.T) {
-	return
-	// TODO: finish simplify
-
 	input := "let x1; let x2; max (3 + 2) * (x1 + x2); s.t. (3 + x1) / x2 <= 5 * (3 + 1);"
-	tokens, err := Tokenize(strings.NewReader(input))
+	tokens, err := lexer.Tokenize(strings.NewReader(input))
 	if err != nil {
 		t.Fatalf("Tokenizing failed: %v", err)
 	}
 
-	parser := &Parser{Tokens: tokens}
+	parser := &parser.Parser{Tokens: tokens}
 	prog, err := parser.ParseProgram()
 	if err != nil {
 		t.Fatalf("Parsing failed: %v", err)

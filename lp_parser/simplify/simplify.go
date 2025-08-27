@@ -1,8 +1,13 @@
 package simplify
 
-import "fmt"
+import (
+	"fmt"
 
-func SimplifyProgram(p *Program) error {
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
+)
+
+func SimplifyProgram(p *parser.Program) error {
 	var err error
 	p.Objective.Expr, err = SimplifyExpr(p.Objective.Expr)
 	if err != nil {
@@ -22,7 +27,7 @@ func SimplifyProgram(p *Program) error {
 	return nil
 }
 
-func SimplifyExpr(expr Expr) (Expr, error) {
+func SimplifyExpr(expr parser.Expr) (parser.Expr, error) {
 	expr, err := Distribute(expr)
 	if err != nil {
 		return expr, err
@@ -42,9 +47,9 @@ func SimplifyExpr(expr Expr) (Expr, error) {
 	return expr, nil
 }
 
-func Distribute(expr Expr) (Expr, error) {
+func Distribute(expr parser.Expr) (parser.Expr, error) {
 	switch e := expr.(type) {
-	case *BinaryExpr:
+	case *parser.BinaryExpr:
 		left, err := Distribute(e.Left)
 		if err != nil {
 			return expr, err
@@ -54,11 +59,11 @@ func Distribute(expr Expr) (Expr, error) {
 			return expr, err
 		}
 
-		if e.Operator.Type == TokenAsterisk {
-			rBin, okr := right.(*BinaryExpr)
-			lBin, okl := left.(*BinaryExpr)
-			rightCondition := okr && (rBin.Operator.Type == TokenPlus || rBin.Operator.Type == TokenMinus)
-			leftCondition := okl && (lBin.Operator.Type == TokenPlus || lBin.Operator.Type == TokenMinus)
+		if e.Operator.Type == lexer.TokenAsterisk {
+			rBin, okr := right.(*parser.BinaryExpr)
+			lBin, okl := left.(*parser.BinaryExpr)
+			rightCondition := okr && (rBin.Operator.Type == lexer.TokenPlus || rBin.Operator.Type == lexer.TokenMinus)
+			leftCondition := okl && (lBin.Operator.Type == lexer.TokenPlus || lBin.Operator.Type == lexer.TokenMinus)
 
 			// (a + b) * (c + d) => a * c + a * d + b * c + b * d
 			if rightCondition && leftCondition {
@@ -79,14 +84,14 @@ func Distribute(expr Expr) (Expr, error) {
 
 			// a * (b + c) => a * b + a * c
 			if rightCondition {
-				return &BinaryExpr{
-					Left: &BinaryExpr{
+				return &parser.BinaryExpr{
+					Left: &parser.BinaryExpr{
 						Left:     left,
 						Operator: e.Operator,
 						Right:    rBin.Left,
 					},
 					Operator: rBin.Operator,
-					Right: &BinaryExpr{
+					Right: &parser.BinaryExpr{
 						Left:     left,
 						Operator: e.Operator,
 						Right:    rBin.Right,
@@ -96,14 +101,14 @@ func Distribute(expr Expr) (Expr, error) {
 
 			// (a + b) * c => a * c + b * c
 			if leftCondition {
-				return &BinaryExpr{
-					Left: &BinaryExpr{
+				return &parser.BinaryExpr{
+					Left: &parser.BinaryExpr{
 						Left:     lBin.Left,
 						Operator: e.Operator,
 						Right:    right,
 					},
 					Operator: lBin.Operator,
-					Right: &BinaryExpr{
+					Right: &parser.BinaryExpr{
 						Left:     lBin.Right,
 						Operator: e.Operator,
 						Right:    right,
@@ -112,17 +117,17 @@ func Distribute(expr Expr) (Expr, error) {
 			}
 		}
 
-		if e.Operator.Type == TokenDivide {
+		if e.Operator.Type == lexer.TokenDivide {
 			// (a + b) / c => a / c + b / c
-			if lBin, ok := left.(*BinaryExpr); ok && (lBin.Operator.Type == TokenPlus || lBin.Operator.Type == TokenMinus) {
-				return &BinaryExpr{
-					Left: &BinaryExpr{
+			if lBin, ok := left.(*parser.BinaryExpr); ok && (lBin.Operator.Type == lexer.TokenPlus || lBin.Operator.Type == lexer.TokenMinus) {
+				return &parser.BinaryExpr{
+					Left: &parser.BinaryExpr{
 						Left:     lBin.Left,
 						Operator: e.Operator,
 						Right:    right,
 					},
 					Operator: lBin.Operator,
-					Right: &BinaryExpr{
+					Right: &parser.BinaryExpr{
 						Left:     lBin.Right,
 						Operator: e.Operator,
 						Right:    right,
@@ -132,21 +137,21 @@ func Distribute(expr Expr) (Expr, error) {
 		}
 
 		// otherwise, can't distribute
-		return &BinaryExpr{Left: left, Operator: e.Operator, Right: right}, nil
-	case *UnaryExpr:
+		return &parser.BinaryExpr{Left: left, Operator: e.Operator, Right: right}, nil
+	case *parser.UnaryExpr:
 		expr, err := Distribute(e.Expr)
 		if err != nil {
 			return expr, err
 		}
-		return &UnaryExpr{Operator: e.Operator, Expr: expr}, nil
-	case *NumberLiteral, *Variable:
+		return &parser.UnaryExpr{Operator: e.Operator, Expr: expr}, nil
+	case *parser.NumberLiteral, *parser.Variable:
 		return expr, nil
 	default:
 		return nil, fmt.Errorf("unexpected expression type in Distribute: %T", expr)
 	}
 }
 
-func Flatten(expr Expr) (Expr, error) {
+func Flatten(expr parser.Expr) (parser.Expr, error) {
 	/*
 		switch e := expr.(type) {
 		case *Variable, *NumberLiteral:
@@ -163,10 +168,10 @@ func Flatten(expr Expr) (Expr, error) {
 	return expr, nil
 }
 
-func CombineLikeTerms(expr Expr) (Expr, error) {
+func CombineLikeTerms(expr parser.Expr) (parser.Expr, error) {
 	return expr, nil
 }
 
-func ConstantFold(expr Expr) (Expr, error) {
+func ConstantFold(expr parser.Expr) (parser.Expr, error) {
 	return expr, nil
 }
