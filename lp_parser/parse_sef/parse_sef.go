@@ -1,0 +1,38 @@
+package parse_sef
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/semantics"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/simplify"
+)
+
+func ParseSEF(progStr string) (*parser.Program, map[string]int, error) {
+	tokens, err := lexer.Tokenize(strings.NewReader(progStr))
+	if err != nil {
+		// http.Error(w, internalServerError, http.StatusInternalServerError)
+		return nil, nil, fmt.Errorf("error tokenizing: %v", err)
+	}
+
+	parseProg := parser.ConstructParser(tokens)
+	prog, err := parseProg.ParseProgram()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error parsing: %v", err)
+	}
+
+	err = simplify.SimplifyProgram(prog)
+	if err != nil {
+		// http.Error(w, "error simplifying expression. "+err.Error(), http.StatusBadRequest)
+		return nil, nil, fmt.Errorf("error simplifying expression: %v", err)
+	}
+
+	idTable, err := semantics.SemanticCheck(prog)
+	if err != nil {
+		return nil, nil, fmt.Errorf("semantic check failed: %v", err)
+	}
+
+	return prog, idTable, nil
+}

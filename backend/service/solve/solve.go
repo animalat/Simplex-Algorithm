@@ -5,12 +5,10 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/parse_sef"
 	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
-	"github.com/animalat/Simplex-Algorithm/lp_parser/semantics"
-	"github.com/animalat/Simplex-Algorithm/lp_parser/simplify"
 )
 
 const EPSILON = 1e-9
@@ -56,30 +54,9 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	progStr := string(progBytes)
-
-	tokens, err := lexer.Tokenize(strings.NewReader(progStr))
+	prog, idTable, err := parse_sef.ParseSEF(progStr)
 	if err != nil {
-		http.Error(w, internalServerError, http.StatusInternalServerError)
-		return
-	}
-
-	parseProg := parser.ConstructParser(tokens)
-	prog, err := parseProg.ParseProgram()
-	if err != nil {
-		http.Error(w, internalServerError, http.StatusInternalServerError)
-		return
-	}
-
-	err = simplify.SimplifyProgram(prog)
-	if err != nil {
-		http.Error(w, "error simplifying expression. "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	idTable, err := semantics.SemanticCheck(prog)
-	if err != nil {
-		http.Error(w, "semantics check failed. "+err.Error(), http.StatusBadRequest)
-		return
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
 	objectiveConst, objective, err := getExprArr(prog.Objective.Expr, idTable, enableObjective)
