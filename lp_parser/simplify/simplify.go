@@ -9,6 +9,8 @@ import (
 
 const negativeMultiplicative = -1
 const defaultMultiplicative = 1
+const enableObjective = true
+const disableObjective = false
 
 type isConstant struct {
 	value      float64
@@ -21,12 +23,21 @@ func SimplifyProgram(p *parser.Program) error {
 	if err != nil {
 		return err
 	}
+	p.Objective.Expr, _, err = CombineLikeTerms(p.Objective.Expr, &parser.NumberLiteral{Value: 0}, enableObjective, make(map[string]float64))
+	if err != nil {
+		return err
+	}
 	for _, constraint := range p.Constraints {
 		constraint.Left, err = SimplifyExpr(constraint.Left)
 		if err != nil {
 			return err
 		}
 		constraint.Right, err = SimplifyExpr(constraint.Right)
+		if err != nil {
+			return err
+		}
+
+		constraint.Left, constraint.Right, err = CombineLikeTerms(constraint.Left, constraint.Right, disableObjective, make(map[string]float64))
 		if err != nil {
 			return err
 		}
@@ -37,10 +48,6 @@ func SimplifyProgram(p *parser.Program) error {
 
 func SimplifyExpr(expr parser.Expr) (parser.Expr, error) {
 	expr, err := DistributeFold(expr, defaultMultiplicative)
-	if err != nil {
-		return expr, err
-	}
-	expr, err = CombineLikeTerms(expr)
 	if err != nil {
 		return expr, err
 	}
@@ -181,6 +188,109 @@ func DistributeFold(expr parser.Expr, multiplicative float64) (parser.Expr, erro
 	}
 }
 
-func CombineLikeTerms(expr parser.Expr) (parser.Expr, error) {
-	return expr, nil
+func CombineLikeTerms(lhs parser.Expr, rhs parser.Expr, isObjective bool, multiplicativeTable map[string]float64) (parser.Expr, parser.Expr, error) {
+	if err := findMultiplicatives(lhs, multiplicativeTable); err != nil {
+		return nil, nil, err
+	}
+	if err := findMultiplicatives(rhs, multiplicativeTable); err != nil {
+		return nil, nil, err
+	}
+
+	firstExpr := true
+	for key, val := range multiplicativeTable {
+		if key == "" {
+			continue
+		}
+
+		newTerm := &parser.BinaryExpr{
+			Left:     &parser.NumberLiteral{Value: val},
+			Operator: lexer.Token{Type: lexer.TokenAsterisk, Value: "*"},
+			Right:    &parser.Variable{ID: lexer.Token{Type: lexer.TokenId, Value: key}},
+		}
+		if firstExpr {
+			lhs = newTerm
+		} else {
+			lhs = &parser.BinaryExpr{
+				Left:     lhs,
+				Operator: lexer.Token{Type: lexer.TokenPlus, Value: "+"},
+				Right:    newTerm,
+			}
+		}
+	}
+
+	if val, ok := multiplicativeTable[""]; ok {
+		rhs = &parser.NumberLiteral{Value: val}
+	} else {
+		rhs = &parser.NumberLiteral{Value: 0}
+	}
+
+	if isObjective {
+		lhs = &parser.BinaryExpr{
+			Left:     lhs,
+			Operator: lexer.Token{Type: lexer.TokenPlus, Value: "+"},
+			Right:    rhs,
+		}
+	}
+
+	return lhs, rhs, nil
+}
+
+func changeMultiplicative(expr parser.Expr, multiplicativeTable map[string]float64) error {
+	switch e := expr.(type) {
+	case *parser.BinaryExpr:
+		if e.Operator.Type == lexer.TokenAsterisk {
+			nl, ok := e.Left.(*parser.NumberLiteral)
+			if !ok {
+				return fmt.Errorf("invalid LHS Expr type %T in %v", e.Left, e)
+			}
+			v, ok := e.Right.(*parser.Variable)
+			if !ok {
+				return fmt.Errorf("invalid RHS Expr type %T in %v", e.Right, e)
+			}
+			if _, ok := multiplicativeTable[v.ID.Value]; !ok {
+				multiplicativeTable[v.ID.Value] = nl.Value
+			} else {
+				multiplicativeTable[v.ID.Value] += nl.Value
+			}
+		} else {
+			return fmt.Errorf("invalid operator %v in BinaryExpr: %v", e.Operator.Value, e)
+		}
+	case *parser.NumberLiteral:
+		if _, ok := multiplicativeTable[""]; !ok {
+			multiplicativeTable[""] = e.Value
+		} else {
+			multiplicativeTable[""] += e.Value
+		}
+	case *parser.Variable:
+		if _, ok := multiplicativeTable[e.ID.Value]; !ok {
+			multiplicativeTable[e.ID.Value] = defaultMultiplicative
+		} else {
+			multiplicativeTable[e.ID.Value]++
+		}
+	default:
+		return fmt.Errorf("invalid expr type: %T", e)
+	}
+
+	return nil
+}
+
+// changes multiplicativeTable
+func findMultiplicatives(expr parser.Expr, multiplicativeTable map[string]float64) error {
+	switch e := expr.(type) {
+	case *parser.BinaryExpr:
+		if err := changeMultiplicative(e.Right, multiplicativeTable); err != nil {
+			return err
+		}
+		if err := findMultiplicatives(e.Left, multiplicativeTable); err != nil {
+			return err
+		}
+	case *parser.NumberLiteral, *parser.Variable:
+		if err := changeMultiplicative(e, multiplicativeTable); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid expr type: %T", e)
+	}
+
+	return nil
 }

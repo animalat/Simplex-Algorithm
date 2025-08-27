@@ -10,6 +10,7 @@ import (
 	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
 	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
 	"github.com/animalat/Simplex-Algorithm/lp_parser/semantics"
+	"github.com/animalat/Simplex-Algorithm/lp_parser/simplify"
 )
 
 const EPSILON = 1e-9
@@ -66,6 +67,12 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	prog, err := parseProg.ParseProgram()
 	if err != nil {
 		http.Error(w, internalServerError, http.StatusInternalServerError)
+		return
+	}
+
+	err = simplify.SimplifyProgram(prog)
+	if err != nil {
+		http.Error(w, "error simplifying expression. "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
