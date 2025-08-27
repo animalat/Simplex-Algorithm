@@ -10,6 +10,9 @@ import (
 	"github.com/animalat/Simplex-Algorithm/lp_parser/simplify"
 )
 
+// Combines everything else and returns a parsed, simplified program.
+// Note that converting the objective function from MIN to MAX is not a concern of this function
+// as that function would be more specialized to solving LPs.
 func ParseSEF(progStr string) (*parser.Program, map[string]int, error) {
 	tokens, err := lexer.Tokenize(strings.NewReader(progStr))
 	if err != nil {
