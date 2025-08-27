@@ -7,6 +7,14 @@ import (
 	"github.com/animalat/Simplex-Algorithm/lp_parser/parser"
 )
 
+const negativeMultiplicative = -1
+const defaultMultiplicative = 1
+
+type isConstant struct {
+	value      float64
+	isConstant bool
+}
+
 func SimplifyProgram(p *parser.Program) error {
 	var err error
 	p.Objective.Expr, err = SimplifyExpr(p.Objective.Expr)
@@ -28,11 +36,7 @@ func SimplifyProgram(p *parser.Program) error {
 }
 
 func SimplifyExpr(expr parser.Expr) (parser.Expr, error) {
-	expr, err := Distribute(expr)
-	if err != nil {
-		return expr, err
-	}
-	expr, err = Flatten(expr)
+	expr, err := Distribute(expr, defaultMultiplicative)
 	if err != nil {
 		return expr, err
 	}
@@ -40,138 +44,143 @@ func SimplifyExpr(expr parser.Expr) (parser.Expr, error) {
 	if err != nil {
 		return expr, err
 	}
-	expr, err = ConstantFold(expr)
-	if err != nil {
-		return expr, err
-	}
 	return expr, nil
 }
 
-func Distribute(expr parser.Expr) (parser.Expr, error) {
+func doOperation(a float64, b float64, tt lexer.TokenType) float64 {
+	var res float64
+	switch tt {
+	case lexer.TokenPlus:
+		res = a + b
+	case lexer.TokenMinus:
+		res = a - b
+	case lexer.TokenAsterisk:
+		res = a * b
+	case lexer.TokenDivide:
+		res = a / b
+	}
+	return res
+}
+
+func exprIsConstant(expr parser.Expr) (isConstant, error) {
 	switch e := expr.(type) {
 	case *parser.BinaryExpr:
-		left, err := Distribute(e.Left)
+		leftIsConstant, err := exprIsConstant(e.Left)
 		if err != nil {
-			return expr, err
+			return isConstant{isConstant: false}, err
 		}
-		right, err := Distribute(e.Right)
+		rightIsConstant, err := exprIsConstant(e.Right)
 		if err != nil {
-			return expr, err
+			return isConstant{isConstant: false}, err
+		}
+		if !leftIsConstant.isConstant || !rightIsConstant.isConstant {
+			return isConstant{isConstant: false}, nil
 		}
 
-		if e.Operator.Type == lexer.TokenAsterisk {
-			rBin, okr := right.(*parser.BinaryExpr)
-			lBin, okl := left.(*parser.BinaryExpr)
-			rightCondition := okr && (rBin.Operator.Type == lexer.TokenPlus || rBin.Operator.Type == lexer.TokenMinus)
-			leftCondition := okl && (lBin.Operator.Type == lexer.TokenPlus || lBin.Operator.Type == lexer.TokenMinus)
+		newConst := doOperation(leftIsConstant.value, rightIsConstant.value, e.Operator.Type)
 
-			// (a + b) * (c + d) => a * c + a * d + b * c + b * d
-			if rightCondition && leftCondition {
-				/*
-					TODO: calculate expressions
-					ac := &BinaryExpr{Left: lBin.Left, Operator: Right:}
-
-					return &BinaryExpr{
-						Left: &BinaryExpr{
-
-						},
-						Operator:
-						Right: &BinaryExpr{
-						}
-					}
-				*/
-			}
-
-			// a * (b + c) => a * b + a * c
-			if rightCondition {
-				return &parser.BinaryExpr{
-					Left: &parser.BinaryExpr{
-						Left:     left,
-						Operator: e.Operator,
-						Right:    rBin.Left,
-					},
-					Operator: rBin.Operator,
-					Right: &parser.BinaryExpr{
-						Left:     left,
-						Operator: e.Operator,
-						Right:    rBin.Right,
-					},
-				}, nil
-			}
-
-			// (a + b) * c => a * c + b * c
-			if leftCondition {
-				return &parser.BinaryExpr{
-					Left: &parser.BinaryExpr{
-						Left:     lBin.Left,
-						Operator: e.Operator,
-						Right:    right,
-					},
-					Operator: lBin.Operator,
-					Right: &parser.BinaryExpr{
-						Left:     lBin.Right,
-						Operator: e.Operator,
-						Right:    right,
-					},
-				}, nil
-			}
-		}
-
-		if e.Operator.Type == lexer.TokenDivide {
-			// (a + b) / c => a / c + b / c
-			if lBin, ok := left.(*parser.BinaryExpr); ok && (lBin.Operator.Type == lexer.TokenPlus || lBin.Operator.Type == lexer.TokenMinus) {
-				return &parser.BinaryExpr{
-					Left: &parser.BinaryExpr{
-						Left:     lBin.Left,
-						Operator: e.Operator,
-						Right:    right,
-					},
-					Operator: lBin.Operator,
-					Right: &parser.BinaryExpr{
-						Left:     lBin.Right,
-						Operator: e.Operator,
-						Right:    right,
-					},
-				}, nil
-			}
-		}
-
-		// otherwise, can't distribute
-		return &parser.BinaryExpr{Left: left, Operator: e.Operator, Right: right}, nil
+		return isConstant{value: newConst, isConstant: true}, nil
 	case *parser.UnaryExpr:
-		expr, err := Distribute(e.Expr)
+		innerIsConstant, err := exprIsConstant(e.Expr)
 		if err != nil {
-			return expr, err
+			return isConstant{isConstant: false}, err
 		}
-		return &parser.UnaryExpr{Operator: e.Operator, Expr: expr}, nil
-	case *parser.NumberLiteral, *parser.Variable:
-		return expr, nil
+		var multiplicative float64
+		if e.Operator.Type == lexer.TokenMinus {
+			multiplicative = negativeMultiplicative
+		} else if e.Operator.Type == lexer.TokenPlus {
+			multiplicative = defaultMultiplicative
+		} else {
+			return isConstant{isConstant: false}, fmt.Errorf("invalid UnaryExpr operator %v: %v", e.Operator.Value, e)
+		}
+
+		if innerIsConstant.isConstant {
+			return isConstant{value: innerIsConstant.value * multiplicative, isConstant: true}, nil
+		} else {
+			return isConstant{isConstant: false}, nil
+		}
+	case *parser.NumberLiteral:
+		return isConstant{value: e.Value, isConstant: true}, nil
 	default:
-		return nil, fmt.Errorf("unexpected expression type in Distribute: %T", expr)
+		return isConstant{isConstant: false}, nil
 	}
 }
 
-func Flatten(expr parser.Expr) (parser.Expr, error) {
-	/*
-		switch e := expr.(type) {
-		case *Variable, *NumberLiteral:
-			return e, nil
-		case *UnaryExpr:
-			inner, err := Flatten(e.expr)
+func Distribute(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
+	switch e := expr.(type) {
+	case *parser.BinaryExpr:
+		switch e.Operator.Type {
+		case lexer.TokenPlus, lexer.TokenMinus:
+			newLeft, err := Distribute(e.Left, multiplicative)
 			if err != nil {
 				return nil, err
 			}
 
-		case *BinaryExpr:
+			var isNegativeLHS float64
+			if e.Operator.Type == lexer.TokenMinus {
+				isNegativeLHS = negativeMultiplicative
+			} else {
+				isNegativeLHS = defaultMultiplicative
+			}
+
+			newRight, err := Distribute(e.Right, isNegativeLHS*multiplicative)
+			if err != nil {
+				return nil, err
+			}
+
+			return &parser.BinaryExpr{
+				Left:     newLeft,
+				Operator: e.Operator,
+				Right:    newRight,
+				Line:     e.Line,
+			}, nil
+		case lexer.TokenAsterisk, lexer.TokenDivide:
+			leftIsConstant, err := exprIsConstant(e.Left)
+			if err != nil {
+				return nil, err
+			}
+			rightIsConstant, err := exprIsConstant(e.Right)
+			if err != nil {
+				return nil, err
+			}
+			if leftIsConstant.isConstant && rightIsConstant.isConstant {
+				return &parser.NumberLiteral{Value: doOperation(leftIsConstant.value, rightIsConstant.value, e.Operator.Type), Line: e.Line}, nil
+			} else if !leftIsConstant.isConstant && !rightIsConstant.isConstant {
+				return nil, fmt.Errorf("nonlinear expression (both sides): %v", e)
+			} else if !leftIsConstant.isConstant && rightIsConstant.isConstant {
+				return Distribute(e.Left, doOperation(multiplicative, rightIsConstant.value, e.Operator.Type))
+			} else {
+				// leftIsConstant.isConstant && !rightIsConstant.isConstant
+				if e.Operator.Type == lexer.TokenAsterisk {
+					return Distribute(e.Right, doOperation(leftIsConstant.value, multiplicative, e.Operator.Type))
+				} else {
+					// TokenDivide
+					return nil, fmt.Errorf("nonlinear expression (RHS rational): %v", e)
+				}
+			}
+		default:
+			return nil, fmt.Errorf("invalid operator \"%v\": %v", e.Operator.Value, e)
 		}
-	*/
-	return expr, nil
+	case *parser.UnaryExpr:
+		if e.Operator.Type == lexer.TokenMinus {
+			multiplicative *= negativeMultiplicative
+		}
+		return Distribute(e.Expr, multiplicative)
+	case *parser.Variable:
+		return &parser.BinaryExpr{
+			Left:     &parser.NumberLiteral{Value: multiplicative, Line: e.ID.Line},
+			Operator: lexer.Token{Type: lexer.TokenAsterisk, Value: "*", Line: e.ID.Line},
+			Right:    e,
+			Line:     e.ID.Line,
+		}, nil
+	case *parser.NumberLiteral:
+		e.Value *= multiplicative
+		return e, nil
+	default:
+		return nil, fmt.Errorf("invalid Expr type found: %T", e)
+	}
 }
 
 func CombineLikeTerms(expr parser.Expr) (parser.Expr, error) {
-	return expr, nil
-}
-
-func ConstantFold(expr parser.Expr) (parser.Expr, error) {
 	return expr, nil
 }
