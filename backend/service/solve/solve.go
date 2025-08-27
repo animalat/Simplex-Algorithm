@@ -61,7 +61,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 
 	objectiveConst, objective, err := getExprArr(prog.Objective.Expr, idTable, enableObjective)
 	if err != nil {
-		http.Error(w, "error converting objective into array. "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error converting objective into array: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -80,14 +80,14 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	for i, constraint := range prog.Constraints {
 		_, curConstraintArr, err := getExprArr(constraint.Left, idTable, disableObjective)
 		if err != nil {
-			http.Error(w, "error converting constraint row "+strconv.Itoa(i)+" into array. "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "error converting constraint row "+strconv.Itoa(i)+" into array: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 		constraintsLHS = append(constraintsLHS, curConstraintArr)
 
 		nl, ok := constraint.Right.(*parser.NumberLiteral)
 		if !ok {
-			http.Error(w, "right hand side is not NumberLiteral on constraint row"+strconv.Itoa(i)+". "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "right hand side is not NumberLiteral on constraint row"+strconv.Itoa(i)+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 		constraintsRHS = append(constraintsRHS, nl.Value)
@@ -105,7 +105,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 			constraintsSlack[i] = -1
 		default:
 			// shouldn't have any other operator types
-			http.Error(w, "invalid comparison operator on constraint row"+strconv.Itoa(i)+". "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "invalid comparison operator on constraint row"+strconv.Itoa(i)+": "+err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -123,7 +123,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	idTableInverse := getTableInverse(idTable)
 	progStrings, err := simplexInput(progArrays, toPositive, idTable, idTableInverse)
 	if err != nil {
-		http.Error(w, "error converting arrays into strings. "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error converting arrays into strings: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -132,18 +132,18 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	colSize := strconv.Itoa(numSlack + len(toPositive) + len(objective))
 	output, err := callSimplex(progStrings, rowSize, colSize)
 	if err != nil {
-		http.Error(w, "error calling simplex method. "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error calling simplex method: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	res, err := parseResult(output)
 	if err != nil {
-		http.Error(w, "error parsing simplex method final result. "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error parsing simplex method final result: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	unsubstitutedSolution, err := retrieveOriginalVariables(numSlack, res.Solution, toPositive, idTableInverse)
 	if err != nil {
-		http.Error(w, "error converting final result variables back to original form. "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error converting final result variables back to original form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	res.Solution = unsubstitutedSolution
