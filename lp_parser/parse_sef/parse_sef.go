@@ -15,7 +15,6 @@ import (
 func ParseSEF(progStr string) (*parser.Program, map[string]int, error) {
 	tokens, err := lexer.Tokenize(strings.NewReader(progStr))
 	if err != nil {
-		// http.Error(w, internalServerError, http.StatusInternalServerError)
 		return nil, nil, fmt.Errorf("error tokenizing: %v", err)
 	}
 
@@ -27,7 +26,6 @@ func ParseSEF(progStr string) (*parser.Program, map[string]int, error) {
 
 	err = simplify.SimplifyProgram(prog)
 	if err != nil {
-		// http.Error(w, "error simplifying expression. "+err.Error(), http.StatusBadRequest)
 		return nil, nil, fmt.Errorf("error simplifying expression: %v", err)
 	}
 
