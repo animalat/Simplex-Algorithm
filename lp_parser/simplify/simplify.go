@@ -36,7 +36,7 @@ func SimplifyProgram(p *parser.Program) error {
 }
 
 func SimplifyExpr(expr parser.Expr) (parser.Expr, error) {
-	expr, err := Distribute(expr, defaultMultiplicative)
+	expr, err := DistributeFold(expr, defaultMultiplicative)
 	if err != nil {
 		return expr, err
 	}
@@ -106,12 +106,12 @@ func exprIsConstant(expr parser.Expr) (isConstant, error) {
 	}
 }
 
-func Distribute(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
+func DistributeFold(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
 	switch e := expr.(type) {
 	case *parser.BinaryExpr:
 		switch e.Operator.Type {
 		case lexer.TokenPlus, lexer.TokenMinus:
-			newLeft, err := Distribute(e.Left, multiplicative)
+			newLeft, err := DistributeFold(e.Left, multiplicative)
 			if err != nil {
 				return nil, err
 			}
@@ -123,7 +123,7 @@ func Distribute(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
 				isNegativeLHS = defaultMultiplicative
 			}
 
-			newRight, err := Distribute(e.Right, isNegativeLHS*multiplicative)
+			newRight, err := DistributeFold(e.Right, isNegativeLHS*multiplicative)
 			if err != nil {
 				return nil, err
 			}
@@ -148,11 +148,11 @@ func Distribute(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
 			} else if !leftIsConstant.isConstant && !rightIsConstant.isConstant {
 				return nil, fmt.Errorf("nonlinear expression (both sides): %v", e)
 			} else if !leftIsConstant.isConstant && rightIsConstant.isConstant {
-				return Distribute(e.Left, doOperation(multiplicative, rightIsConstant.value, e.Operator.Type))
+				return DistributeFold(e.Left, doOperation(multiplicative, rightIsConstant.value, e.Operator.Type))
 			} else {
 				// leftIsConstant.isConstant && !rightIsConstant.isConstant
 				if e.Operator.Type == lexer.TokenAsterisk {
-					return Distribute(e.Right, doOperation(leftIsConstant.value, multiplicative, e.Operator.Type))
+					return DistributeFold(e.Right, doOperation(leftIsConstant.value, multiplicative, e.Operator.Type))
 				} else {
 					// TokenDivide
 					return nil, fmt.Errorf("nonlinear expression (RHS rational): %v", e)
@@ -165,7 +165,7 @@ func Distribute(expr parser.Expr, multiplicative float64) (parser.Expr, error) {
 		if e.Operator.Type == lexer.TokenMinus {
 			multiplicative *= negativeMultiplicative
 		}
-		return Distribute(e.Expr, multiplicative)
+		return DistributeFold(e.Expr, multiplicative)
 	case *parser.Variable:
 		return &parser.BinaryExpr{
 			Left:     &parser.NumberLiteral{Value: multiplicative, Line: e.ID.Line},
