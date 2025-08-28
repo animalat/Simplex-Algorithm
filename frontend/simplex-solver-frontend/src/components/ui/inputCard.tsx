@@ -11,7 +11,7 @@ import {
 import { TextArea } from "./TextArea"
 
 export default function InputCard() {
-    const defaultInput = "let   x1;\nlet   x2;\nmax 3 * x1 + 4 * x2;\ns.t.   x1 + x2 <= 5;\n       x1 >= 0;\n       x2>=0;"
+    const defaultInput = "let   x1;\nlet   x2;\nmax 3 * x1 + 4 * x2;\ns.t.   x1 + x2 <= 5;\n       x1 >= 0;\n       x2 >= 0;"
     return (
         <div className="flex justify-center">
             <Card className="w-[75vw]">
