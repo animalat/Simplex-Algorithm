@@ -28,6 +28,9 @@ const internalServerError = "500 INTERNAL SERVER ERROR"
 const enableObjective = true
 const disableObjective = false
 
+// HandleSolve accepts (plain text) an LP in form like: "let x1; let x2; max x1 + x2 + 3; s.t. x1 <= 5;"
+// It returns (JSON format) the solution (if one exists) and certificate, along with
+// a string specifying the output type, and a map that details what variables is at each index.
 func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	// TODO: handle malicious input
 	defer r.Body.Close()
