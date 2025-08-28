@@ -31,9 +31,10 @@ type SimplexProgramStrings struct {
 
 // API output
 type SimplexResult struct {
-	Solution    []float64 `json:"solution"`
-	ResultType  string    `json:"resultType"`
-	Certificate []float64 `json:"certificate"`
+	Solution    []float64      `json:"solution"`
+	ResultType  string         `json:"resultType"`
+	Certificate []float64      `json:"certificate"`
+	Mapping     map[int]string `json:"mapping"`
 }
 
 // Insert element from an Expr to an array version of that Expr
@@ -242,7 +243,7 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 }
 
 // Gets the raw result from the Simplex calculator
-func parseResult(output string) (SimplexResult, error) {
+func parseResult(output string, idTableInverse map[int]string) (SimplexResult, error) {
 	r := strings.NewReader(output)
 
 	var solution []float64
@@ -277,6 +278,7 @@ func parseResult(output string) (SimplexResult, error) {
 		Solution:    solution,
 		ResultType:  resultType,
 		Certificate: certificate,
+		Mapping:     idTableInverse,
 	}, nil
 }
 

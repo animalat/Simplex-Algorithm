@@ -136,7 +136,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := parseResult(output)
+	res, err := parseResult(output, idTableInverse)
 	if err != nil {
 		http.Error(w, "error parsing simplex method final result: "+err.Error(), http.StatusBadRequest)
 		return
