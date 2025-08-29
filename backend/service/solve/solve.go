@@ -60,6 +60,7 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	prog, idTable, err := parse_sef.ParseSEF(progStr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	objectiveConst, objective, err := getExprArr(prog.Objective.Expr, idTable, enableObjective)
