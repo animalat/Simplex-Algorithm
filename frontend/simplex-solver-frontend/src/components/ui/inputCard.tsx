@@ -14,13 +14,14 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { SimplexResponse } from "@/app/page"
 import axios from "axios"
+import { ButtonDialog } from "./buttonDialog"
 
 interface InputCardProps {
     onSimplexResponse: (data: SimplexResponse) => void;
 }
 
 export default function InputCard({ onSimplexResponse }: InputCardProps) {
-    const defaultInput = "let x1;\nlet x2;\nmax 3 * x1 + 4 * x2;\ns.t. x1 + x2 <= 5;\n x1 >= 0;\n x2 >= 0;";
+    const defaultInput = "let x1;\nlet x2;\nmax 3 * x1 + 4 * x2;\ns.t. x1 + x2 <= 5;\nx1 >= 0;\nx2 >= 0;";
     const URL = "http://localhost:8080/solve"
 
     const [value, setValue] = useState(defaultInput);
@@ -50,12 +51,7 @@ export default function InputCard({ onSimplexResponse }: InputCardProps) {
                     <CardTitle>Linear Program Solver</CardTitle>
                     <CardDescription>Enter a Linear Program below to solve</CardDescription>
                     <CardAction>
-                        <Button
-                            variant="ghost"
-                            onClick={() => {}}
-                        >
-                            Example
-                        </Button>
+                        <ButtonDialog />
                     </CardAction>
                 </CardHeader>
                 <CardContent>
