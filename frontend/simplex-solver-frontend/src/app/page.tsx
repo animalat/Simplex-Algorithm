@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import InputCard from "@/components/ui/inputCard"
+import ResultCard from "@/components/ui/resultCard";
 
 export interface SimplexResponse {
   solution: number[];
@@ -15,6 +16,7 @@ export default function Home() {
   return (
     <div>
       <InputCard onSimplexResponse={setSimplexResult} />
+      {simplexResult && <ResultCard result={simplexResult} />}
     </div>
   );
 }

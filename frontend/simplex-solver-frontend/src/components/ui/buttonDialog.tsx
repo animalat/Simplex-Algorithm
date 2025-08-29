@@ -18,7 +18,7 @@ export function ButtonDialog() {
                     </Button>
                 </DialogTrigger>
                 <DialogPortal>
-                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <span className="fixed inset-0 flex items-center justify-center z-50">
                         <DialogContent
                             aria-label="Input Example"
                             className="
@@ -28,27 +28,19 @@ export function ButtonDialog() {
                                 border-4 border-gray-300
                                 text-gray-600
                                 buttonDialog
+                                overflow-auto
                             "
                         >
                             <DialogHeader>
-                                <DialogTitle>Input Example</DialogTitle>
-                                <DialogDescription>
-                                    <ResizablePanelGroup
-                                        direction="horizontal"
-                                        className="rounded-lg border md:min-w-[450px]"
-                                    >
-                                        <ResizablePanel defaultSize={50} className="h-full p-6 whitespace-pre-wrap exampleText">
-                                            {defaultInput}
-                                        </ResizablePanel>
-                                        <ResizableHandle />
-                                        <ResizablePanel defaultSize={50} className="h-full p-6 whitespace-pre-wrap exampleText">
-                                            {defaultDescription}
-                                        </ResizablePanel>
-                                    </ResizablePanelGroup>
+                                <DialogTitle className="text-black font-semibold">Input Example</DialogTitle>
+                                <DialogDescription className="flex">
+                                    <span className="p-0.5 whitespace-pre-wrap exampleText ml-auto">{defaultInput}</span>
+                                    <span className="w-px bg-gray-300 mx-4"></span>
+                                    <span className="p-0.5 whitespace-pre-wrap exampleText mr-auto">{defaultDescription}</span>
                                 </DialogDescription>
                             </DialogHeader>
                         </DialogContent>
-                    </div>
+                    </span>
                 </DialogPortal>
             </form>
         </Dialog>
