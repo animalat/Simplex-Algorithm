@@ -36,16 +36,12 @@ export function ButtonDialog() {
                                         direction="horizontal"
                                         className="rounded-lg border md:min-w-[450px]"
                                     >
-                                        <ResizablePanel defaultSize={50}>
-                                            <div className="h-full p-6 whitespace-pre-wrap exampleText">
-                                                {defaultInput}
-                                            </div>
+                                        <ResizablePanel defaultSize={50} className="h-full p-6 whitespace-pre-wrap exampleText">
+                                            {defaultInput}
                                         </ResizablePanel>
                                         <ResizableHandle />
-                                        <ResizablePanel defaultSize={50}>
-                                            <div className="h-full p-6 whitespace-pre-wrap exampleText">
-                                                {defaultDescription}
-                                            </div>
+                                        <ResizablePanel defaultSize={50} className="h-full p-6 whitespace-pre-wrap exampleText">
+                                            {defaultDescription}
                                         </ResizablePanel>
                                     </ResizablePanelGroup>
                                 </DialogDescription>
