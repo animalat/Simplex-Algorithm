@@ -35,8 +35,17 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	// TODO: handle malicious input
 	defer r.Body.Close()
 
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	if r.URL.Path != solvePath {
 		http.Error(w, pageNotFound, http.StatusNotFound)
+		return
+	}
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 

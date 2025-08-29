@@ -215,7 +215,7 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 	constraintsOutputLHS := progStrings.constraintsOutputLHS
 	constraintsOutputRHS := progStrings.constraintsOutputRHS
 
-	cmd := exec.Command("../../../simplex_core/simplex_solver")
+	cmd := exec.Command("../../simplex_core/simplex_solver")
 
 	input := ""
 	// main matrix, LHS constraints (A)
