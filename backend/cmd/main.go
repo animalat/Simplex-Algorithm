@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	log.Println("Server starting...")
 	http.HandleFunc("/solve", solve.HandleSolve)
 
 	const port = ":8080"
