@@ -22,11 +22,12 @@ export function ButtonDialog() {
                         <DialogContent
                             aria-label="Input Example"
                             className="
-                                w-[60vw] h-[600px]
-                                p-6 rounded-lg
+                                w-[90vw] h-[90vh]
+                                p-2 rounded-lg
                                 bg-white shadow-lg
                                 border-4 border-gray-300
                                 text-gray-600
+                                buttonDialog
                             "
                         >
                             <DialogHeader>
