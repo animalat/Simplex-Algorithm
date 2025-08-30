@@ -25,8 +25,8 @@ export default function SolutionDisplay({ solution, resultType, certificate, map
                     <p>Certificate:</p>
                     <Latex>
                         {String.raw`\[
-\begin{pmatrix} ${createLHS(solution)} \end{pmatrix} =
-\begin{pmatrix} ${createRHS(solution)} \end{pmatrix}
+                            \begin{pmatrix} ${createLHS(solution)} \end{pmatrix} =
+                            \begin{pmatrix} ${createRHS(solution)} \end{pmatrix}
                         \]`}
                     </Latex>
                 </div>
@@ -36,8 +36,8 @@ export default function SolutionDisplay({ solution, resultType, certificate, map
                     <p>Certificate:</p>
                     <Latex>
                         {String.raw`\[
-\begin{pmatrix} ${createLHS(certificate)} \end{pmatrix} =
-\begin{pmatrix} ${createRHS(certificate)} \end{pmatrix}
+                            \begin{pmatrix} ${createLHS(certificate)} \end{pmatrix} =
+                            \begin{pmatrix} ${createRHS(certificate)} \end{pmatrix}
                         \]`}
                     </Latex>
                 </div>
