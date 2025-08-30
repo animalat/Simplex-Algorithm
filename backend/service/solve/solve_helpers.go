@@ -253,7 +253,7 @@ func parseResult(output string, idTableInverse map[int]string) (SimplexResult, e
 
 	readTypeAlready := false
 	for _, token := range tokens {
-		if token == "feasible" || token == "infeasible" || token == "unbounded" {
+		if token == "optimal" || token == "infeasible" || token == "unbounded" {
 			resultType = token
 			readTypeAlready = true
 			continue
