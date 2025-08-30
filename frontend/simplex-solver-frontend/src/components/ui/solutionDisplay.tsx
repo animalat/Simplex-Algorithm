@@ -17,11 +17,10 @@ export default function SolutionDisplay({ solution, resultType, certificate, map
         return rhs
     }
 
-        console.log(resultType);
     return (
         <div>
             Result is {resultType}
-            {resultType != "asible" && (
+            {resultType != "infeasible" && (
                 <div className="mt-4">
                     <p>Certificate:</p>
                     <Latex>

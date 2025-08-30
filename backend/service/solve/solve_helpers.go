@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/animalat/Simplex-Algorithm/lp_parser/lexer"
@@ -244,34 +245,31 @@ func callSimplex(progStrings SimplexProgramStrings, rowSize string, colSize stri
 
 // Gets the raw result from the Simplex calculator
 func parseResult(output string, idTableInverse map[int]string) (SimplexResult, error) {
-	r := strings.NewReader(output)
+	tokens := strings.Fields(output)
 
 	var solution []float64
-	for r.Len() > 0 {
-		var x float64
-		_, err := fmt.Fscan(r, &x)
-		if err != nil {
-			break
-		}
-
-		solution = append(solution, x)
-	}
-
 	var resultType string
-	_, err := fmt.Fscan(r, &resultType)
-	if err != nil {
-		return SimplexResult{}, fmt.Errorf("no resultType found")
-	}
-
 	var certificate []float64
-	for r.Len() > 0 {
-		var x float64
-		_, err := fmt.Fscan(r, &x)
-		if err != nil {
-			break
+
+	readTypeAlready := false
+	for _, token := range tokens {
+		if token == "feasible" || token == "infeasible" || token == "unbounded" {
+			resultType = token
+			readTypeAlready = true
+			continue
 		}
 
-		certificate = append(certificate, x)
+		const doubleSize = 64
+		numToAppend, err := strconv.ParseFloat(token, doubleSize)
+		if err != nil {
+			return SimplexResult{}, fmt.Errorf("error converting output into token: %v", err)
+		}
+
+		if !readTypeAlready {
+			solution = append(solution, numToAppend)
+		} else {
+			certificate = append(certificate, numToAppend)
+		}
 	}
 
 	return SimplexResult{
