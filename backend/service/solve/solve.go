@@ -156,10 +156,19 @@ func HandleSolve(w http.ResponseWriter, r *http.Request) {
 	}
 	unsubstitutedSolution, err := retrieveOriginalVariables(numSlack, res.Solution, toPositive, idTableInverse)
 	if err != nil {
-		http.Error(w, "error converting final result variables back to original form: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "error converting final result variables (solution) back to original form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	res.Solution = unsubstitutedSolution
+
+	if res.ResultType == "unbounded" {
+		unsubstitutedCertificate, err := retrieveOriginalVariables(numSlack, res.Certificate, toPositive, idTableInverse)
+		if err != nil {
+			http.Error(w, "error converting final result variables (certificate) back to original form: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		res.Certificate = unsubstitutedCertificate
+	}
 
 	w.Header().Set(contentType, applicationJson)
 	w.WriteHeader(http.StatusOK)

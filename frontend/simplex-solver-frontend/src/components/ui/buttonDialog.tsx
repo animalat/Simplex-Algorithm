@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogPortal, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "./button";
 import { DialogHeader } from "./dialog";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./resizable";
 
 export function ButtonDialog() {
     const defaultInput = "let x1;\nlet x2;\nmax 3 * x1 + 4 * x2;\ns.t. x1 + x2 <= 5;\nx1 >= 0;\nx2 >= 0;";

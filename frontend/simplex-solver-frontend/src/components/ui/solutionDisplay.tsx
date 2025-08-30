@@ -2,18 +2,47 @@ import Latex from "react-latex-next";
 
 interface SolutionDisplayProps {
     solution: number[];
+    resultType: string;
+    certificate: number[];
     mapping: Record<number, string>;
 }
 
-export default function SolutionDisplay({ solution, mapping }: SolutionDisplayProps) {
-    const lhs = solution.map((_, idx) => (`\\text{${mapping[idx]}}`)).join(' \\\\ ');
-    const rhs = solution.map(val => `${val}`).join(' \\\\ ');
+export default function SolutionDisplay({ solution, resultType, certificate, mapping }: SolutionDisplayProps) {
+    const createLHS = (vector: number[]) => {
+        const lhs = vector.map((_, idx) => (`\\text{${mapping[idx]}}`)).join(' \\\\ ');
+        return lhs
+    }
+    const createRHS = (vector: number[]) => {
+        const rhs = vector.map(val => `${val}`).join(' \\\\ ');
+        return rhs
+    }
+
+        console.log(resultType);
     return (
-        <Latex> 
-            {String.raw`\[
-                \begin{pmatrix} ${lhs} \end{pmatrix} =
-                \begin{pmatrix} ${rhs} \end{pmatrix}
-            \]`}
-        </Latex>
+        <div>
+            Result is {resultType}
+            {resultType != "asible" && (
+                <div className="mt-4">
+                    <p>Certificate:</p>
+                    <Latex>
+                        {String.raw`\[
+\begin{pmatrix} ${createLHS(solution)} \end{pmatrix} =
+\begin{pmatrix} ${createRHS(solution)} \end{pmatrix}
+                        \]`}
+                    </Latex>
+                </div>
+            )}
+            {resultType == "unbounded" && (
+                <div className="mt-4">
+                    <p>Certificate:</p>
+                    <Latex>
+                        {String.raw`\[
+\begin{pmatrix} ${createLHS(certificate)} \end{pmatrix} =
+\begin{pmatrix} ${createRHS(certificate)} \end{pmatrix}
+                        \]`}
+                    </Latex>
+                </div>
+            )}
+        </div>
     );
 }

@@ -14,7 +14,7 @@ export default function ResultCard({ result }: ResultCardProps) {
                     <CardTitle>Simplex Result</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <SolutionDisplay solution={result.solution} mapping={result.mapping} />
+                    <SolutionDisplay solution={result.solution} resultType={result.resultType} certificate={result.certificate} mapping={result.mapping} />
                 </CardContent>
             </Card>
         </div>
