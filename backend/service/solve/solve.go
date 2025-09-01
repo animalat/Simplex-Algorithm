@@ -32,7 +32,6 @@ const disableObjective = false
 // It returns (JSON format) the solution (if one exists) and certificate, along with
 // a string specifying the output type, and a map that details what variables is at each index.
 func HandleSolve(w http.ResponseWriter, r *http.Request) {
-	// TODO: handle malicious input
 	defer r.Body.Close()
 
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
