@@ -14,7 +14,7 @@ x1 >= 0;
 x2 >= 0;
 ```
 and receive optimal solutions (or determine infeasibility/unboundedness).
-<p align="left">
+<p align="center">
   <img src="https://drive.google.com/uc?export=view&id=1K2ajupc39jTZ8I4frbeb57J4DaW_87wz" alt="Simple Mail Preview" width="762" style="border:10px solid #ddd;" />
 </p>
 
