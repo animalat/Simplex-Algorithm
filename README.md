@@ -1,1 +1,38 @@
-Input -> Lexer -> Parser -> Simplifier (distribute/constant fold + collect like terms) -> Standard Equality Form -> Canonical Form -> 2-Phase (Simplex) -> Interpret & Return Solution
+### Simplex Algorithm
+A linear programming solver (e.g., cost minimization) built from scratch using the Simplex method.
+
+---
+
+#### Overview:
+Take text-based inputs in the form:
+```
+let x1;
+let x2;
+max x1 + x2;
+s.t. x1 + x2 <= 5;
+```
+and receive optimal solutions (or determine infeasibility/unboundedness).
+
+---
+
+#### How it works:
+```mermaid
+graph LR
+    subgraph Frontend
+        A("Input<br>(TypeScript, Next.js, React)")
+    end
+
+    subgraph Go_Pipeline["Go Pipeline"]
+        B("Lexer / Parser / Simplifier<br>+ Expression Optimizations<br>(Go)")
+        C("Backend API<br>(Go net/http)")
+    end
+
+    subgraph Simplex_Algorithm["C++ Algorithm (Math)"]
+        D("Standard Equality Form")
+        E("Canonical Form")
+        F("2-Phase Simplex")
+        G("Custom Matrix Class")
+    end
+
+    A --> B --> C --> D --> E --> F
+```
