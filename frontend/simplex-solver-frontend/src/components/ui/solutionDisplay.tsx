@@ -22,7 +22,7 @@ export default function SolutionDisplay({ solution, resultType, certificate, map
             Result is {resultType}
             {resultType != "infeasible" && (
                 <div className="mt-4">
-                    <p>Certificate:</p>
+                    <p>Solution:</p>
                     <Latex>
                         {String.raw`\[
                             \begin{pmatrix} ${createLHS(solution)} \end{pmatrix} =
