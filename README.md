@@ -28,8 +28,8 @@ graph LR
     end
 
     subgraph Go_Pipeline["Go Pipeline"]
-        B("Lexer / Parser / Simplifier<br>+ Expression Optimizations<br>(Go)")
-        C("Backend API<br>(Go net/http)")
+        B("Backend API<br>(Go net/http)")
+        C("Lexer / Parser / Simplifier<br>+ Expression Optimizations<br>(Go)")
     end
 
     subgraph Simplex_Algorithm["C++ Algorithm (Math)"]
