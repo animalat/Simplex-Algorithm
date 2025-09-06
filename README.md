@@ -27,7 +27,7 @@ graph LR
         A("Input<br>(TypeScript, Next.js, React)")
     end
 
-    subgraph Go_Pipeline["Go Pipeline"]
+    subgraph Go_Pipeline["Go Backend & Parser"]
         B("Backend API<br>(Go net/http)")
         C("Lexer / Parser / Simplifier<br>+ Expression Optimizations<br>(Go)")
     end
