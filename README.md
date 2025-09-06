@@ -41,3 +41,6 @@ graph LR
 
     A --> B --> C --> D --> E --> F
 ```
+> Fun fact: the parser builds abstract syntax trees (like a compiler!) to simplify expressions automatically. It distributes and simplifies expressions, combines like terms, and rearranges equations under the hood.
+>
+> For example:  (1 + 2) * (3 + x1) <= (5 + x1)   -->   (2 * x1) <= -4
