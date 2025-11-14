@@ -5,6 +5,7 @@ A linear programming solver (e.g., cost minimization) built from scratch using t
 
 #### Overview:
 Take text-based inputs in the form:
+
 ```
 let x1;
 let x2;
@@ -13,6 +14,7 @@ s.t. x1 + x2 <= 5;
 x1 >= 0;
 x2 >= 0;
 ```
+
 and receive optimal solutions (or determine infeasibility/unboundedness).
 <p align="center">
   <img src="https://drive.google.com/uc?export=view&id=1K2ajupc39jTZ8I4frbeb57J4DaW_87wz" alt="Simple Mail Preview" width="762" style="border:10px solid #ddd;" />
