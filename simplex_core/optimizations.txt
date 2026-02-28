@@ -1,0 +1,8 @@
+Bland's Rule (to avoid the infinite edge case)
+
+TODO:
+Create an edge-case generator
+Benchmarking
+Profile (perf, Valgrind [cachegrind])
+SIMD
+Cache locality
