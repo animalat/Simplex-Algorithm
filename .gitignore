@@ -1,11 +1,15 @@
 # custom
 .vscode
 *.o
+*.in
+*.out
 .DS_Store
 /simplex_core/main
 /simplex_core/main.exe
 /simplex_core/tests/hidden_tests
 simplex_core/simplex_solver.exe
+simplex_core/simplex_solver
+simplex_core/perf.data
 
 # dependencies
 node_modules
@@ -46,5 +50,3 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 TODO.env
-simplex_core/simplex_solver
-simplex_core/perf.data

@@ -1,7 +1,7 @@
 import sys
 
 
-def validateArgs():
+def validate_args():
     if len(sys.argv) != 2:
         print(f'Usage: python {sys.argv[0]} <arg1>')
         sys.exit(1)
@@ -17,17 +17,37 @@ def validateArgs():
     return n
 
 
+def print_matrix(m):
+    ROWS = len(m)
+    COLS = len(m[0])
+
+    print(ROWS)
+    print(COLS)
+    for i in range(ROWS):
+        print(*(f'{m[i][j]}' for j in range(COLS)))
+
+
 def main():
-    n = validateArgs()
-    A = [[0] * n for _ in range(n)]
+    n = validate_args()
+
+    constraints_lhs = [[0] * n for _ in range(n)]
     for i in range(n):
-        A[i][i] = 1
-    
+        constraints_lhs[i][i] = 1
     for i in range(1, n):
         for j in range(n - i):
-            A[j + i][j] = 2 ** (i + 1)
-    
-    print(A)
+            constraints_lhs[j + i][j] = 2 ** (i + 1)
+    print_matrix(constraints_lhs)
+
+    constraints_rhs = [[5 ** i] for i in range(1, n + 1)]
+    print_matrix(constraints_rhs)
+
+    BASE = 10
+    objective_func = [[BASE ** (n - i - 1) for i in range(n)]]
+    print_matrix(objective_func)
+
+    constant_term = 0
+    print(constant_term)
+
 
 if __name__ == '__main__':
     main()
