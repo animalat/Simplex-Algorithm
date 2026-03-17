@@ -1,6 +1,6 @@
 CXX := g++
-CXXFLAGSUNOPTIMIZED := -g -O0 -std=c++23 -Wall -Wextra -I./matrix -I./simplex -I./common
-CXXFLAGS := -g -O3 -std=c++23 -Wall -Wextra -I./matrix -I./simplex -I./common
+CXXFLAGSUNOPTIMIZED := -g -fno-omit-frame-pointer -O0 -std=c++23 -Wall -Wextra -I./matrix -I./simplex -I./common
+CXXFLAGS := -g -fno-omit-frame-pointer -O3 -std=c++23 -Wall -Wextra -I./matrix -I./simplex -I./common
 
 SRCS := main.cpp \
 		common/Utils.cpp \

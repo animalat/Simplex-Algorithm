@@ -46,3 +46,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 TODO.env
+simplex_core/simplex_solver
+simplex_core/perf.data
