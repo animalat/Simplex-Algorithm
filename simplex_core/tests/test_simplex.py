@@ -1,23 +1,18 @@
-def use_test(test: list[int], expected: list[int]) -> bool:
-    import subprocess
-    res = subprocess.run(['../simplex_solver', capture_output=True, text=True, check=True])
+import os
 
-    if (res.returncode != 0):
-        print("C++ error (nonzero return code):")
-        return False
-    
-    # logic for checking (compare to .out)
+def get_files(path, extension):
+    import glob
+
+    for root, _, _ in os.walk(path):
+        for file_path in glob.iglob(root + "/*." + extension):
+            yield file_path
 
 def main() -> None:
-    import glob
-    in_files = glob.glob('*.in')
-    out_files = glob.glob('*.out')
+    INPUT_EXTENSION = "in"
+    OUTPUT_EXTENSION = "out"
 
-    for file in in_files:
-        with open(file) as f:
-            test = [[float(num) for num in line.split()] for line in f]
-            if not use_test(test, expected):
-                print(f'Failed test: {file}')
+    for input_file in get_files("./", INPUT_EXTENSION):
+        output_file = input_file.removesuffix(INPUT_EXTENSION) + OUTPUT_EXTENSION
 
 if __name__ == '__main__':
     main()
