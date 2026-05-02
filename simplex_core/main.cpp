@@ -1,19 +1,26 @@
 #include "matrix/Matrix.h"
 #include "matrix/ExtraMatrixFunctions.h"
 #include "simplex/Simplex.h"
+#include <chrono>
 
-constexpr int oneArg = 2;
-constexpr int humanReadableOutput = 1;
+constexpr int humanReadableOutputIdx = 1;
+constexpr int timeProgramIdx = 2;
+constexpr int maxNumArgs = 3;
 
 // use the --humanReadable flag for human-readable output
 int main(int argc, char *argv[]) {
-    if (argc > oneArg) {
-        throw std::invalid_argument("Too many arguments, expected up to 1 argument");
+    if (argc > maxNumArgs) {
+        throw std::invalid_argument("Too many arguments, expected up to 2 arguments");
     }
 
-    std::string progArgument;
-    if (argc == oneArg) {
-        progArgument = argv[humanReadableOutput];
+    bool isHumanReadable = false;
+    bool isTimed = false;
+    for (int i = 1; i < argc; ++i) {
+        const std::string humanReadableFlag = "--humanReadable";
+        const std::string timedFlag = "--timed";
+
+        isHumanReadable = isHumanReadable || argv[i] == humanReadableFlag;
+        isTimed = isTimed || argv[i] == timedFlag;
     }
 
     // Enter matrices:
@@ -25,8 +32,7 @@ int main(int argc, char *argv[]) {
     std::vector<int> basis{0, 2, 4, 5};
     LPResult res = {LPResultType::INFEASIBLE, Matrix(0, 0), Matrix(0, 0)};
     
-    const std::string humanReadableFlag = "--humanReadable";
-    if (progArgument == humanReadableFlag) {
+    if (isHumanReadable) {
         constraintsLHS = readAndInitializeMatrix();
         constraintsRHS = readAndInitializeMatrix();
         objectiveFunc = readAndInitializeMatrix();
@@ -39,9 +45,16 @@ int main(int argc, char *argv[]) {
         std::cin >> constantTerm;
     }
 
+    auto start = std::chrono::steady_clock::now();
     twoPhase(objectiveFunc, constantTerm, constraintsLHS, constraintsRHS, res);
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
-    if (progArgument == humanReadableFlag) {
+    if (isTimed) {
+        std::cout << "Time: " << duration.count() << std::endl;
+    }
+
+    if (isHumanReadable) {
         std::cout << res.solution << getResultTypeString(res.type) << res.certificate;
     } else {
         printMatrixBasic(std::cout, res.solution);
