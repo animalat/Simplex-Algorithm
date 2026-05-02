@@ -201,20 +201,18 @@ Matrix Matrix::operator-(const Matrix &rhs) const {
     return result;
 }
 
-// NOTE: These row operations are implemented by multiplying
-//       with elementary matrices for clarity and conceptual simplicity.
-//       This is NOT optimized for performance and results in higher time complexity
-//       when used in matrix inversion or elimination algorithms.
-//       Suitable for educational/demo purposes only.
-//       It is recommended to directly implement these functions if faster time is desired.
 void Matrix::swapRows(int row1, int row2) {
-    (*this) = rowSwapMatrix(row1, row2, this->getRows()) * (*this);
+    std::swap(entries_[row1], entries_[row2]);
 }
 
 void Matrix::addRows(int row1, int row2, double factor) {
-    (*this) = rowAddMatrix(row1, row2, this->getRows(), factor) * (*this);
+    for (int i = 0; i < getCols(); ++i) {
+        entries_[row1][i] += factor * entries_[row2][i];
+    }
 }
 
 void Matrix::scaleRow(int row, double factor) {
-    (*this) = rowMultiplyMatrix(row, this->getRows(), factor) * (*this);
+    for (double &num : entries_[row]) {
+        num *= factor;
+    }
 }
