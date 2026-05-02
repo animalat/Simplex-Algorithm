@@ -9,3 +9,5 @@ Removing branch checks on operator():              2786895
 Inlining operator():                               2601168
 
 1D underlying vector:                              2300982
+
+Branch Pruning (if constexpr)                      negligible
