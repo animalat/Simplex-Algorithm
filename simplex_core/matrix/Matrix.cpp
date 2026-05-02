@@ -15,7 +15,7 @@ Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols},
 }
 
 // Accessors and mutators
-double Matrix::operator()(int row, int col) const {
+double Matrix::at(int row, int col) const {
     if (row < 0 || row >= rows_) {
         throw std::out_of_range("Matrix row out of bounds");
     } else if (col < 0 || col >= cols_) {
@@ -25,7 +25,7 @@ double Matrix::operator()(int row, int col) const {
     return entries_[row][col];
 }
 
-double &Matrix::operator()(int row, int col) {
+double &Matrix::at(int row, int col) {
     if (row < 0 || row >= rows_) {
         throw std::out_of_range("Matrix row out of bounds");
     } else if (col < 0 || col >= cols_) {
@@ -207,12 +207,12 @@ void Matrix::swapRows(int row1, int row2) {
 
 void Matrix::addRows(int row1, int row2, double factor) {
     for (int i = 0; i < getCols(); ++i) {
-        entries_[row1][i] += factor * entries_[row2][i];
+        (*this)(row1, i) += factor * (*this)(row2, i);
     }
 }
 
 void Matrix::scaleRow(int row, double factor) {
-    for (double &num : entries_[row]) {
-        num *= factor;
+    for (int i = 0; i < getCols(); ++i) {
+        (*this)(row, i) *= factor;
     }
 }
