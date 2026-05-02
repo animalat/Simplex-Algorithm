@@ -1,2 +1,3 @@
 (in ns)
 Original: 10162044723
+After changing from elementary operations: 9719745
