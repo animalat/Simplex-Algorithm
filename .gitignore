@@ -50,3 +50,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 TODO.env
+simplex_core/perf.data.old
