@@ -7,8 +7,7 @@
 #include <iomanip>
 
 // Constructor
-Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, 
-                                entries_(rows, std::vector<double>(cols, 0.0)) {
+Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, entries_(rows * cols) {
     if (rows < 0 || cols < 0) {
         throw std::invalid_argument("Invalid matrix size");
     }
@@ -22,7 +21,7 @@ double Matrix::at(int row, int col) const {
         throw std::out_of_range("Matrix column out of bounds");
     }
 
-    return entries_[row][col];
+    return entries_[row * cols_ + col];
 }
 
 double &Matrix::at(int row, int col) {
@@ -32,7 +31,7 @@ double &Matrix::at(int row, int col) {
         throw std::out_of_range("Matrix column out of bounds");
     }
     
-    return entries_[row][col];
+    return entries_[row * cols_ + col];
 }
 
 int Matrix::getRows() const {
@@ -202,7 +201,9 @@ Matrix Matrix::operator-(const Matrix &rhs) const {
 }
 
 void Matrix::swapRows(int row1, int row2) {
-    std::swap(entries_[row1], entries_[row2]);
+    for (int i = 0; i < getCols(); ++i) {
+        std::swap((*this)(row1, i), (*this)(row2, i));
+    }
 }
 
 void Matrix::addRows(int row1, int row2, double factor) {
