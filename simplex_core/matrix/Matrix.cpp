@@ -6,30 +6,38 @@
 #include <cmath>
 #include <iomanip>
 
+void Matrix::validateNegativeRowsOrCols() const {
+    if constexpr (DO_VALIDATION) {
+        if (rows_ < 0 || cols_ < 0) {
+            throw std::invalid_argument("Invalid matrix size");
+        }
+    }
+}
+
 // Constructor
 Matrix::Matrix(int rows, int cols) : rows_{rows}, cols_{cols}, entries_(rows * cols) {
-    if (rows < 0 || cols < 0) {
-        throw std::invalid_argument("Invalid matrix size");
+    validateNegativeRowsOrCols();
+}
+
+void Matrix::validateExceedingRowsOrCols(int row, int col) const {
+    if constexpr (DO_VALIDATION) {
+        if (row < 0 || row >= rows_) {
+            throw std::out_of_range("Matrix row out of bounds");
+        } else if (col < 0 || col >= cols_) {
+            throw std::out_of_range("Matrix column out of bounds");
+        }
     }
 }
 
 // Accessors and mutators
 double Matrix::at(int row, int col) const {
-    if (row < 0 || row >= rows_) {
-        throw std::out_of_range("Matrix row out of bounds");
-    } else if (col < 0 || col >= cols_) {
-        throw std::out_of_range("Matrix column out of bounds");
-    }
+    validateExceedingRowsOrCols(row, col);
 
     return entries_[row * cols_ + col];
 }
 
 double &Matrix::at(int row, int col) {
-    if (row < 0 || row >= rows_) {
-        throw std::out_of_range("Matrix row out of bounds");
-    } else if (col < 0 || col >= cols_) {
-        throw std::out_of_range("Matrix column out of bounds");
-    }
+    validateExceedingRowsOrCols(row, col);
     
     return entries_[row * cols_ + col];
 }
@@ -150,14 +158,19 @@ Matrix readAndInitializeMatrixQuiet() {
     return result;
 }
 
+void Matrix::multiplicationCheck(const Matrix &rhs) const {
+    if constexpr (DO_VALIDATION) {
+        if (this->getCols() != rhs.getRows()) {
+            throw std::out_of_range("Invalid matrix dimensions");
+        }
+    }
+}
+
 // Operations
 Matrix Matrix::operator*(const Matrix &rhs) const {
-    if (this->getCols() != rhs.getRows()) {
-        throw std::out_of_range("Invalid matrix dimensions");
-    }
+    multiplicationCheck(rhs);
     
     Matrix result(this->getRows(), rhs.getCols());
-    
     for (int i = 0; i < result.getRows(); ++i) {
         for (int j = 0; j < result.getCols(); ++j) {
             for (int k = 0; k < rhs.getRows(); ++k) {
@@ -170,10 +183,17 @@ Matrix Matrix::operator*(const Matrix &rhs) const {
 }
 
 
-Matrix Matrix::operator+(const Matrix &rhs) const {
-    if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
-        throw std::out_of_range("Invalid matrix dimensions");
+void Matrix::additionSubtractionCheck(const Matrix &rhs) const {
+    if constexpr (DO_VALIDATION) {
+        if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
+            throw std::out_of_range("Invalid matrix dimensions");
+        }
     }
+}
+
+
+Matrix Matrix::operator+(const Matrix &rhs) const {
+    additionSubtractionCheck(rhs);
 
     Matrix result(this->getRows(), this->getCols());
     for (int i = 0; i < result.getRows(); ++i) {
@@ -186,9 +206,7 @@ Matrix Matrix::operator+(const Matrix &rhs) const {
 }
 
 Matrix Matrix::operator-(const Matrix &rhs) const {
-    if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
-        throw std::out_of_range("Invalid matrix dimensions");
-    }
+    additionSubtractionCheck(rhs);
 
     Matrix result(this->getRows(), this->getCols());
     for (int i = 0; i < result.getRows(); ++i) {

@@ -6,7 +6,8 @@ SRCS := main.cpp \
 		common/Utils.cpp \
         matrix/Matrix.cpp \
         matrix/ExtraMatrixFunctions.cpp \
-        simplex/Simplex.cpp
+        simplex/Simplex.cpp \
+		simplex/SimplexValidation.cpp
 
 OBJS := $(SRCS:.cpp=.o)
 TARGET := simplex_solver
