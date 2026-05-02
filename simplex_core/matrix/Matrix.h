@@ -36,6 +36,11 @@ class Matrix {
     private:
         int rows_, cols_;
         std::vector<double> entries_;
+
+        void validateNegativeRowsOrCols() const;
+        void validateExceedingRowsOrCols(int row, int col) const;
+        void additionSubtractionCheck(const Matrix &rhs) const;
+        void multiplicationCheck(const Matrix &rhs) const;
 };
 
 void printMatrixBasic(std::ostream &os, const Matrix &matrix);

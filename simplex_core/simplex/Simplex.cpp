@@ -1,4 +1,5 @@
 #include "Simplex.h"
+#include "SimplexValidation.h"
 #include "../matrix/ExtraMatrixFunctions.h"
 #include "../common/Constants.h"
 #include "../common/Utils.h"
@@ -34,11 +35,7 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
                      Matrix &constraintsLHS, Matrix &constraintsRHS, 
                      const std::vector<int> &basis) {
     // Note that this function needs constraint x >= 0, for Ax = b
-    if (objectiveFunc.getRows() != 1) {
-        throw std::invalid_argument("Objective function not a row vector");
-    } else if (objectiveFunc.getCols() != constraintsLHS.getCols()) {
-        throw std::invalid_argument("Objective function and constraint matrix differ in column size");
-    }
+    canonicalFormValidation(objectiveFunc, constraintsLHS);
     
     Matrix basisInverse = leftInverse(getSubMatrix(constraintsLHS, basis));
     
@@ -62,17 +59,7 @@ void canonicalForm(Matrix &objectiveFunc, double &constantTerm,
 void simplex(Matrix objectiveFunc, double constantTerm, 
              Matrix constraintsLHS, Matrix constraintsRHS, 
              std::vector<int> &basis, LPResult &result) {
-    if (objectiveFunc.getCols() <= 0 || objectiveFunc.getRows() <= 0) {
-        throw std::invalid_argument("Invalid objectiveFunc size");
-    } else if (constraintsLHS.getCols() <= 0 || constraintsLHS.getRows() <= 0) {
-        throw std::invalid_argument("Invalid constraintsLHS size");
-    } else if (constraintsRHS.getCols() <= 0 || constraintsRHS.getRows() <= 0) {
-        throw std::invalid_argument("Invalid constraintsRHS size");
-    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
-        throw std::invalid_argument("constraintsLHS must be same height constraintsRHS");
-    } else if (convertToInt(basis.size()) != constraintsLHS.getRows()) {
-        throw std::invalid_argument("constraintsLHS height does not match basis size");
-    }
+    simplexValidation(objectiveFunc, constraintsLHS, constraintsRHS, basis);
 
     // Store some original data for obtaining certificates
     const Matrix origObjective = objectiveFunc;
@@ -168,14 +155,8 @@ void simplex(Matrix objectiveFunc, double constantTerm,
 
 // Phase I of the algorithm (determine a possibly feasible basis)
 PhaseIResult phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS) {
-    if (constraintsRHS.getRows() <= 0 || constraintsRHS.getCols() != 1) {
-        throw std::invalid_argument("Invalid constraintsRHS dimensions");
-    } else if (constraintsLHS.getRows() <= 0 || constraintsLHS.getCols() <= 0) {
-        throw std::invalid_argument("Invalid constraintsLHS dimensions");
-    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
-        throw std::invalid_argument("constraintsLHS and constraintsRHS differ in height");
-    }
-    
+    phaseIValidation(constraintsLHS, constraintsRHS);
+
     // auxiliaryLHS will be augmented matrix in form [A | I]
     Matrix auxiliaryLHS(constraintsLHS.getRows(), constraintsLHS.getCols() + constraintsLHS.getRows());
     Matrix auxiliaryRHS = constraintsRHS;
@@ -249,15 +230,7 @@ PhaseIResult phaseI(const Matrix &constraintsLHS, const Matrix &constraintsRHS) 
 void twoPhase(const Matrix &objectiveFunc, double constantTerm, 
               const Matrix &constraintsLHS, const Matrix &constraintsRHS,
               LPResult &result) {
-    if (objectiveFunc.getCols() <= 0 || objectiveFunc.getRows() <= 0) {
-        throw std::invalid_argument("Invalid objectiveFunc size");
-    } else if (constraintsLHS.getCols() <= 0 || constraintsLHS.getRows() <= 0) {
-        throw std::invalid_argument("Invalid constraintsLHS size");
-    } else if (constraintsRHS.getCols() <= 0 || constraintsRHS.getRows() <= 0) {
-        throw std::invalid_argument("Invalid constraintsRHS size");
-    } else if (constraintsLHS.getRows() != constraintsRHS.getRows()) {
-        throw std::invalid_argument("constraintsLHS must be same height constraintsRHS");
-    }
+    twoPhaseValidation(objectiveFunc, constraintsLHS, constraintsRHS);
 
     // Run Phase I
     PhaseIResult phaseIResult = phaseI(constraintsLHS, constraintsRHS);
