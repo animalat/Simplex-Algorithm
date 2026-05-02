@@ -10,11 +10,11 @@ class Matrix {
         Matrix() = default;
 
         inline double operator()(int row, int col) const {
-            return entries_[row][col];
+            return entries_[row * cols_ + col];
         }
 
         inline double &operator()(int row, int col) {
-            return entries_[row][col];
+            return entries_[row * cols_ + col];
         }
 
         double at(int row, int col) const;
@@ -35,7 +35,7 @@ class Matrix {
         void scaleRow(int row, double factor);
     private:
         int rows_, cols_;
-        std::vector<std::vector<double>> entries_;
+        std::vector<double> entries_;
 };
 
 void printMatrixBasic(std::ostream &os, const Matrix &matrix);
