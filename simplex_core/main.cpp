@@ -3,11 +3,10 @@
 #include "simplex/Simplex.h"
 #include <chrono>
 
-constexpr int humanReadableOutputIdx = 1;
-constexpr int timeProgramIdx = 2;
 constexpr int maxNumArgs = 3;
 
 // use the --humanReadable flag for human-readable output
+// use the --timed flag to display time taken for Simplex
 int main(int argc, char *argv[]) {
     if (argc > maxNumArgs) {
         throw std::invalid_argument("Too many arguments, expected up to 2 arguments");
