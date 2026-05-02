@@ -9,8 +9,17 @@ class Matrix {
         Matrix(int rows, int cols);
         Matrix() = default;
 
-        double operator()(int row, int col) const;
-        double &operator()(int row, int col);
+        inline double operator()(int row, int col) const {
+            return entries_[row][col];
+        }
+
+        inline double &operator()(int row, int col) {
+            return entries_[row][col];
+        }
+
+        double at(int row, int col) const;
+        double &at(int row, int col);
+
         int getRows() const;
         int getCols() const;
         

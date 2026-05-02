@@ -1,3 +1,5 @@
 (in ns)
 Original: 10162044723
 After changing from elementary operations: 9719745
+Removing branch checks on operator(): 2786895
+Inlining operator(): 2601168
