@@ -171,10 +171,11 @@ Matrix Matrix::operator*(const Matrix &rhs) const {
     multiplicationCheck(rhs);
     
     Matrix result(this->getRows(), rhs.getCols());
-    for (int i = 0; i < result.getRows(); ++i) {
-        for (int j = 0; j < result.getCols(); ++j) {
-            for (int k = 0; k < rhs.getRows(); ++k) {
-                result(i, j) += (*this)(i, k) * rhs(k, j);
+    for (int i = 0; i < getRows(); ++i) {
+        for (int j = 0; j < getCols(); ++j) {
+            const double temp = (*this)(i, j);
+            for (int k = 0; k < rhs.getCols(); ++k) {
+                result(i, k) += temp * rhs(j, k);
             }
         }
     }
