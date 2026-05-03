@@ -1,10 +1,12 @@
 Done:
 Create an edge-case generator
 Bland's Rule (to avoid the infinite edge case)
-
-TODO:
 Benchmarking
 Profile (perf, Valgrind [cachegrind])
-SIMD
-Cache locality
 Compile-time branch pruning (if constexpr)
+Cache locality
+
+TODO:
+SIMD
+Cache alignment
+LU Decomposition
