@@ -11,3 +11,5 @@ Inlining operator():                               2601168
 1D underlying vector:                              2300982
 
 Branch Pruning (if constexpr)                      negligible
+
+Matrix::operator* Cache Locality                   1874161
