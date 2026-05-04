@@ -3,10 +3,16 @@
 #include <algorithm>
 #include <cmath>
 
-Matrix identityMatrix(int size) {
-    if (size < 0) {
-        throw std::invalid_argument("Invalid matrix size");
+void identityMatrixValidation(int size) {
+    if constexpr (DO_VALIDATION) {
+        if (size < 0) {
+            throw std::invalid_argument("Invalid matrix size");
+        }
     }
+}
+
+Matrix identityMatrix(int size) {
+    identityMatrixValidation(size);
 
     Matrix result(size, size);
     for (int i = 0; i < size; ++i) {
@@ -15,12 +21,18 @@ Matrix identityMatrix(int size) {
     return result;
 }
 
-Matrix rowSwapMatrix(int row1, int row2, int size) {
-    if (size <= 0) {
-        throw std::invalid_argument("Invalid size");
-    } else if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size) {
-        throw std::out_of_range("Row index out of bounds");
+void rowSwapAddMatrixValidation(int row1, int row2, int size) {
+    if constexpr (DO_VALIDATION) {
+        if (size <= 0) {
+            throw std::invalid_argument("Invalid size");
+        } else if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size) {
+            throw std::out_of_range("Row index out of bounds");
+        }
     }
+}
+
+Matrix rowSwapMatrix(int row1, int row2, int size) {
+    rowSwapAddMatrixValidation(row1, row2, size);
 
     Matrix result = identityMatrix(size);
     result(row1, row1) = 0;
@@ -33,34 +45,42 @@ Matrix rowSwapMatrix(int row1, int row2, int size) {
 }
 
 Matrix rowAddMatrix(int row1, int row2, int size, double factor) {
-    if (size <= 0) {
-        throw std::invalid_argument("Invalid size");
-    } else if (row1 < 0 || row1 >= size || row2 < 0 || row2 >= size) {
-        throw std::out_of_range("Row index out of bounds");
-    }
+    rowSwapAddMatrixValidation(row1, row2, size);
 
     Matrix result = identityMatrix(size);
     result(row1, row2) = factor;
     return result;
 }
 
-Matrix rowMultiplyMatrix(int row, int size, double factor) {
-    if (size <= 0) {
-        throw std::invalid_argument("Invalid size");
-    } else if (row < 0 || row >= size) {
-        throw std::out_of_range("Row index out of bounds");
+void rowMultiplyMatrixValidation(int row, int size) {
+    if constexpr (DO_VALIDATION) {
+        if (size <= 0) {
+            throw std::invalid_argument("Invalid size");
+        } else if (row < 0 || row >= size) {
+            throw std::out_of_range("Row index out of bounds");
+        }
     }
+}
+
+Matrix rowMultiplyMatrix(int row, int size, double factor) {
+    rowMultiplyMatrixValidation(row, size);
 
     Matrix result = identityMatrix(size);
     result(row, row) *= factor;
     return result;
 }
 
+void inverseValidation(const Matrix &matrix) {
+    if constexpr (DO_VALIDATION) {
+        if (matrix.getCols() != matrix.getRows()) {
+            throw std::domain_error("Matrix has no inverse");
+        }
+    }
+}
+
 // This is an implementation of the Gaussian elimination algorithm.
 Matrix leftInverse(const Matrix &matrix) {
-    if (matrix.getCols() != matrix.getRows()) {
-        throw std::domain_error("Matrix has no inverse");
-    }
+    inverseValidation(matrix);
 
     Matrix matrixCopy = matrix;
     Matrix result = identityMatrix(matrixCopy.getCols());
