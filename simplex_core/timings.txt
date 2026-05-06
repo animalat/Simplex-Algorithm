@@ -12,4 +12,4 @@ Inlining operator():                               2601168
 
 Branch Pruning (if constexpr)                      negligible
 
-Matrix::operator* Cache Locality                   1874161
+Matrix::operator* Cache Locality                   2053050
