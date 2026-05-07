@@ -41,6 +41,9 @@ class Matrix {
         void validateExceedingRowsOrCols(int row, int col) const;
         void additionSubtractionCheck(const Matrix &rhs) const;
         void multiplicationCheck(const Matrix &rhs) const;
+
+        void addRowsScalar(int row1, int row2, double factor, int start);
+        void addRowsSIMD(int row1, int row2, double factor);
 };
 
 void printMatrixBasic(std::ostream &os, const Matrix &matrix);
