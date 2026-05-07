@@ -250,7 +250,7 @@ void Matrix::addRows(int row1, int row2, double factor) {
     // }
 
     addRowsSIMD(row1, row2, factor);
-    addRowsScalar(row1, row2, factor, getCols() - (getCols()) % 4);
+    addRowsScalar(row1, row2, factor, getCols() - getCols() % 4);
 }
 
 void Matrix::scaleRow(int row, double factor) {
