@@ -13,3 +13,5 @@ Inlining operator():                               2601168
 Branch Pruning (if constexpr)                      negligible
 
 Matrix::operator* Cache Locality                   2053050
+
+SIMD AVX2 addRows                                  1713678

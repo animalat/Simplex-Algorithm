@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
+#include <immintrin.h>
 
 void Matrix::validateNegativeRowsOrCols() const {
     if constexpr (DO_VALIDATION) {
@@ -225,10 +226,33 @@ void Matrix::swapRows(int row1, int row2) {
     }
 }
 
-void Matrix::addRows(int row1, int row2, double factor) {
-    for (int i = 0; i < getCols(); ++i) {
+void Matrix::addRowsScalar(int row1, int row2, double factor, int start) {
+    for (int i = start; i < getCols(); ++i) {
         (*this)(row1, i) += factor * (*this)(row2, i);
     }
+}
+
+#if defined(__AVX2__) && defined(__FMA__)
+void Matrix::addRowsSIMD(int row1, int row2, double factor) {
+    __m256d avxFactor = _mm256_set1_pd(factor);
+    for (int i = 0; i <= getCols() - 4; i += 4) {
+        __m256d avxRow1 = _mm256_loadu_pd(&entries_.data()[row1 * cols_ + i]);
+        __m256d avxRow2 = _mm256_loadu_pd(&entries_.data()[row2 * cols_ + i]);
+
+        __m256d avxResult = _mm256_fmadd_pd(avxRow2, avxFactor, avxRow1);
+
+        _mm256_storeu_pd(&entries_.data()[row1 * cols_ + i], avxResult);
+    }
+}
+#endif
+
+void Matrix::addRows(int row1, int row2, double factor) {
+#if defined(__AVX2__) && defined(__FMA__)
+    addRowsSIMD(row1, row2, factor);
+    addRowsScalar(row1, row2, factor, getCols() - getCols() % 4);
+#else
+    addRowsScalar(row1, row2, factor, 0);
+#endif
 }
 
 void Matrix::scaleRow(int row, double factor) {
