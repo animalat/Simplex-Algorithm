@@ -232,6 +232,7 @@ void Matrix::addRowsScalar(int row1, int row2, double factor, int start) {
     }
 }
 
+#if defined(__AVX2__) && defined(__FMA__)
 void Matrix::addRowsSIMD(int row1, int row2, double factor) {
     __m256d avxFactor = _mm256_set1_pd(factor);
     for (int i = 0; i <= getCols() - 4; i += 4) {
@@ -243,14 +244,15 @@ void Matrix::addRowsSIMD(int row1, int row2, double factor) {
         _mm256_storeu_pd(&entries_.data()[row1 * cols_ + i], avxResult);
     }
 }
+#endif
 
 void Matrix::addRows(int row1, int row2, double factor) {
-    // for (int i = 0; i < getCols(); ++i) {
-    //     (*this)(row1, i) += factor * (*this)(row2, i);
-    // }
-
+#if defined(__AVX2__) && defined(__FMA__)
     addRowsSIMD(row1, row2, factor);
     addRowsScalar(row1, row2, factor, getCols() - getCols() % 4);
+#else
+    addRowsScalar(row1, row2, factor, 0);
+#endif
 }
 
 void Matrix::scaleRow(int row, double factor) {

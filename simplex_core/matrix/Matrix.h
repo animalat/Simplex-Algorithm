@@ -43,7 +43,9 @@ class Matrix {
         void multiplicationCheck(const Matrix &rhs) const;
 
         void addRowsScalar(int row1, int row2, double factor, int start);
+        #if defined(__AVX2__) && defined(__FMA__)
         void addRowsSIMD(int row1, int row2, double factor);
+        #endif
 };
 
 void printMatrixBasic(std::ostream &os, const Matrix &matrix);
