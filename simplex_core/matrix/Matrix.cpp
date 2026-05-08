@@ -184,7 +184,6 @@ Matrix Matrix::operator*(const Matrix &rhs) const {
     return result;
 }
 
-
 void Matrix::additionSubtractionCheck(const Matrix &rhs) const {
     if constexpr (DO_VALIDATION) {
         if (this->getCols() != rhs.getCols() || this->getRows() != rhs.getRows()) {
@@ -192,7 +191,6 @@ void Matrix::additionSubtractionCheck(const Matrix &rhs) const {
         }
     }
 }
-
 
 Matrix Matrix::operator+(const Matrix &rhs) const {
     additionSubtractionCheck(rhs);
